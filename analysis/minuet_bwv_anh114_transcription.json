@@ -1,0 +1,1126 @@
+{
+ "piece": "Minuet in G major, BWV Anh. 114",
+ "from": "Notebook for Anna Magdalena Bach (1725)",
+ "composer": "Christian Petzold",
+ "key": "G major",
+ "time": "3/4",
+ "bars": 32,
+ "structure": "A (bars 1-16, repeated in performance) + B (bars 17-32)",
+ "source": {
+  "typeset": "Allen Garvin, Mutopia Project (Mutopia-2017/01/19-75), typeset with LilyPond from the Bach-Gesellschaft edition; header license: Public Domain",
+  "workPage": "https://imslp.org/wiki/Minuet_in_G_major,_BWV_Anh.114_(Pezold,_Christian)",
+  "lilypond": "https://www.mutopiaproject.org/ftp/BachJS/BWVAnh114/anna-magdalena-04/anna-magdalena-04.ly",
+  "midi": "https://www.mutopiaproject.org/ftp/BachJS/BWVAnh114/anna-magdalena-04/anna-magdalena-04.mid",
+  "localCopies": [
+   "analysis/score-src/anna-magdalena-04.ly",
+   "analysis/score-src/anna-magdalena-04.mid"
+  ],
+  "method": "This transcription was parsed from the typeset's own MIDI render; every note was cross-checked against the LilyPond source text bar by bar."
+ },
+ "melody": [
+  {
+   "bar": 1,
+   "onsetBeats": 0.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 1,
+   "onsetBeats": 1.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 1,
+   "onsetBeats": 1.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 1,
+   "onsetBeats": 2.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 1,
+   "onsetBeats": 2.5,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 2,
+   "onsetBeats": 3.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 2,
+   "onsetBeats": 4.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 2,
+   "onsetBeats": 5.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 3,
+   "onsetBeats": 6.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 1.0
+  },
+  {
+   "bar": 3,
+   "onsetBeats": 7.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 3,
+   "onsetBeats": 7.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 3,
+   "onsetBeats": 8.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 0.5
+  },
+  {
+   "bar": 3,
+   "onsetBeats": 8.5,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 0.5
+  },
+  {
+   "bar": 4,
+   "onsetBeats": 9.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 1.0
+  },
+  {
+   "bar": 4,
+   "onsetBeats": 10.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 4,
+   "onsetBeats": 11.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 5,
+   "onsetBeats": 12.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 1.0
+  },
+  {
+   "bar": 5,
+   "onsetBeats": 13.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 5,
+   "onsetBeats": 13.5,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 5,
+   "onsetBeats": 14.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 5,
+   "onsetBeats": 14.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 6,
+   "onsetBeats": 15.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 1.0
+  },
+  {
+   "bar": 6,
+   "onsetBeats": 16.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 6,
+   "onsetBeats": 16.5,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 6,
+   "onsetBeats": 17.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 6,
+   "onsetBeats": 17.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 7,
+   "onsetBeats": 18.0,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 1.0
+  },
+  {
+   "bar": 7,
+   "onsetBeats": 19.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 7,
+   "onsetBeats": 19.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 7,
+   "onsetBeats": 20.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 7,
+   "onsetBeats": 20.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 8,
+   "onsetBeats": 21.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 3.0
+  },
+  {
+   "bar": 9,
+   "onsetBeats": 24.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 9,
+   "onsetBeats": 25.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 9,
+   "onsetBeats": 25.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 9,
+   "onsetBeats": 26.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 9,
+   "onsetBeats": 26.5,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 10,
+   "onsetBeats": 27.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 10,
+   "onsetBeats": 28.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 10,
+   "onsetBeats": 29.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 11,
+   "onsetBeats": 30.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 1.0
+  },
+  {
+   "bar": 11,
+   "onsetBeats": 31.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 11,
+   "onsetBeats": 31.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 11,
+   "onsetBeats": 32.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 0.5
+  },
+  {
+   "bar": 11,
+   "onsetBeats": 32.5,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 0.5
+  },
+  {
+   "bar": 12,
+   "onsetBeats": 33.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 1.0
+  },
+  {
+   "bar": 12,
+   "onsetBeats": 34.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 12,
+   "onsetBeats": 35.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 13,
+   "onsetBeats": 36.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 1.0
+  },
+  {
+   "bar": 13,
+   "onsetBeats": 37.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 13,
+   "onsetBeats": 37.5,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 13,
+   "onsetBeats": 38.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 13,
+   "onsetBeats": 38.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 14,
+   "onsetBeats": 39.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 1.0
+  },
+  {
+   "bar": 14,
+   "onsetBeats": 40.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 0.5
+  },
+  {
+   "bar": 14,
+   "onsetBeats": 40.5,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 14,
+   "onsetBeats": 41.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 14,
+   "onsetBeats": 41.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 15,
+   "onsetBeats": 42.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 1.0
+  },
+  {
+   "bar": 15,
+   "onsetBeats": 43.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 15,
+   "onsetBeats": 43.5,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 15,
+   "onsetBeats": 44.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 15,
+   "onsetBeats": 44.5,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 0.5
+  },
+  {
+   "bar": 16,
+   "onsetBeats": 45.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 3.0
+  },
+  {
+   "bar": 17,
+   "onsetBeats": 48.0,
+   "name": "B5",
+   "midi": 83,
+   "beats": 1.0
+  },
+  {
+   "bar": 17,
+   "onsetBeats": 49.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 0.5
+  },
+  {
+   "bar": 17,
+   "onsetBeats": 49.5,
+   "name": "A5",
+   "midi": 81,
+   "beats": 0.5
+  },
+  {
+   "bar": 17,
+   "onsetBeats": 50.0,
+   "name": "B5",
+   "midi": 83,
+   "beats": 0.5
+  },
+  {
+   "bar": 17,
+   "onsetBeats": 50.5,
+   "name": "G5",
+   "midi": 79,
+   "beats": 0.5
+  },
+  {
+   "bar": 18,
+   "onsetBeats": 51.0,
+   "name": "A5",
+   "midi": 81,
+   "beats": 1.0
+  },
+  {
+   "bar": 18,
+   "onsetBeats": 52.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 18,
+   "onsetBeats": 52.5,
+   "name": "E5",
+   "midi": 76,
+   "beats": 0.5
+  },
+  {
+   "bar": 18,
+   "onsetBeats": 53.0,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 0.5
+  },
+  {
+   "bar": 18,
+   "onsetBeats": 53.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 19,
+   "onsetBeats": 54.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 1.0
+  },
+  {
+   "bar": 19,
+   "onsetBeats": 55.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 0.5
+  },
+  {
+   "bar": 19,
+   "onsetBeats": 55.5,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 0.5
+  },
+  {
+   "bar": 19,
+   "onsetBeats": 56.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 0.5
+  },
+  {
+   "bar": 19,
+   "onsetBeats": 56.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 20,
+   "onsetBeats": 57.0,
+   "name": "C#5",
+   "midi": 73,
+   "beats": 1.0
+  },
+  {
+   "bar": 20,
+   "onsetBeats": 58.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 20,
+   "onsetBeats": 58.5,
+   "name": "C#5",
+   "midi": 73,
+   "beats": 0.5
+  },
+  {
+   "bar": 20,
+   "onsetBeats": 59.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 1.0
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 60.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 60.5,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 61.0,
+   "name": "C#5",
+   "midi": 73,
+   "beats": 0.5
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 61.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 62.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 0.5
+  },
+  {
+   "bar": 21,
+   "onsetBeats": 62.5,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 0.5
+  },
+  {
+   "bar": 22,
+   "onsetBeats": 63.0,
+   "name": "G5",
+   "midi": 79,
+   "beats": 1.0
+  },
+  {
+   "bar": 22,
+   "onsetBeats": 64.0,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 1.0
+  },
+  {
+   "bar": 22,
+   "onsetBeats": 65.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 1.0
+  },
+  {
+   "bar": 23,
+   "onsetBeats": 66.0,
+   "name": "F#5",
+   "midi": 78,
+   "beats": 1.0
+  },
+  {
+   "bar": 23,
+   "onsetBeats": 67.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 1.0
+  },
+  {
+   "bar": 23,
+   "onsetBeats": 68.0,
+   "name": "C#5",
+   "midi": 73,
+   "beats": 1.0
+  },
+  {
+   "bar": 24,
+   "onsetBeats": 69.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 3.0
+  },
+  {
+   "bar": 25,
+   "onsetBeats": 72.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 25,
+   "onsetBeats": 73.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 25,
+   "onsetBeats": 73.5,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 0.5
+  },
+  {
+   "bar": 25,
+   "onsetBeats": 74.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 26,
+   "onsetBeats": 75.0,
+   "name": "E5",
+   "midi": 76,
+   "beats": 1.0
+  },
+  {
+   "bar": 26,
+   "onsetBeats": 76.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 26,
+   "onsetBeats": 76.5,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 0.5
+  },
+  {
+   "bar": 26,
+   "onsetBeats": 77.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 27,
+   "onsetBeats": 78.0,
+   "name": "D5",
+   "midi": 74,
+   "beats": 1.0
+  },
+  {
+   "bar": 27,
+   "onsetBeats": 79.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 1.0
+  },
+  {
+   "bar": 27,
+   "onsetBeats": 80.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 1.0
+  },
+  {
+   "bar": 28,
+   "onsetBeats": 81.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 28,
+   "onsetBeats": 81.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 28,
+   "onsetBeats": 82.0,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 0.5
+  },
+  {
+   "bar": 28,
+   "onsetBeats": 82.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 28,
+   "onsetBeats": 83.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 1.0
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 84.0,
+   "name": "D4",
+   "midi": 62,
+   "beats": 0.5
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 84.5,
+   "name": "E4",
+   "midi": 64,
+   "beats": 0.5
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 85.0,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 0.5
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 85.5,
+   "name": "G4",
+   "midi": 67,
+   "beats": 0.5
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 86.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 0.5
+  },
+  {
+   "bar": 29,
+   "onsetBeats": 86.5,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 30,
+   "onsetBeats": 87.0,
+   "name": "C5",
+   "midi": 72,
+   "beats": 1.0
+  },
+  {
+   "bar": 30,
+   "onsetBeats": 88.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 1.0
+  },
+  {
+   "bar": 30,
+   "onsetBeats": 89.0,
+   "name": "A4",
+   "midi": 69,
+   "beats": 1.0
+  },
+  {
+   "bar": 31,
+   "onsetBeats": 90.0,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.5
+  },
+  {
+   "bar": 31,
+   "onsetBeats": 90.5,
+   "name": "D5",
+   "midi": 74,
+   "beats": 0.5
+  },
+  {
+   "bar": 31,
+   "onsetBeats": 91.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 1.0
+  },
+  {
+   "bar": 31,
+   "onsetBeats": 92.0,
+   "name": "F#4",
+   "midi": 66,
+   "beats": 1.0
+  },
+  {
+   "bar": 32,
+   "onsetBeats": 93.0,
+   "name": "G4",
+   "midi": 67,
+   "beats": 3.0
+  }
+ ],
+ "bassFirstNotePerBar": [
+  {
+   "bar": 1,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 2,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 3,
+   "name": "C4",
+   "midi": 60
+  },
+  {
+   "bar": 4,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 5,
+   "name": "A3",
+   "midi": 57
+  },
+  {
+   "bar": 6,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 7,
+   "name": "D4",
+   "midi": 62
+  },
+  {
+   "bar": 8,
+   "name": "D4",
+   "midi": 62
+  },
+  {
+   "bar": 9,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 10,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 11,
+   "name": "C4",
+   "midi": 60
+  },
+  {
+   "bar": 12,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 13,
+   "name": "A3",
+   "midi": 57
+  },
+  {
+   "bar": 14,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 15,
+   "name": "C4",
+   "midi": 60
+  },
+  {
+   "bar": 16,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 17,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 18,
+   "name": "F#3",
+   "midi": 54
+  },
+  {
+   "bar": 19,
+   "name": "E3",
+   "midi": 52
+  },
+  {
+   "bar": 20,
+   "name": "A3",
+   "midi": 57
+  },
+  {
+   "bar": 21,
+   "name": "A3",
+   "midi": 57
+  },
+  {
+   "bar": 22,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 23,
+   "name": "D4",
+   "midi": 62
+  },
+  {
+   "bar": 24,
+   "name": "D4",
+   "midi": 62
+  },
+  {
+   "bar": 25,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 26,
+   "name": "C4",
+   "midi": 60
+  },
+  {
+   "bar": 27,
+   "name": "B3",
+   "midi": 59
+  },
+  {
+   "bar": 28,
+   "name": "D4",
+   "midi": 62
+  },
+  {
+   "bar": 29,
+   "name": "D3",
+   "midi": 50
+  },
+  {
+   "bar": 30,
+   "name": "E3",
+   "midi": 52
+  },
+  {
+   "bar": 31,
+   "name": "G3",
+   "midi": 55
+  },
+  {
+   "bar": 32,
+   "name": "G3",
+   "midi": 55
+  }
+ ],
+ "ornamentsNotEncoded": [
+  {
+   "bar": 7,
+   "onsetBeats": 20.885417,
+   "name": "B4",
+   "midi": 71,
+   "beats": 0.111979,
+   "kind": "grace",
+   "belongsToBar": 8,
+   "note": "grace before bar 8 A4; in the source MIDI render it steals time from bar 7 final G4 (0.385417 + 0.111979 beats); the melody list restores that G4 to its written 0.5 beats"
+  },
+  {
+   "bar": 32,
+   "onsetBeats": 93.0,
+   "name": "B3",
+   "midi": 59,
+   "beats": 3.0,
+   "kind": "cadence-chord-tone",
+   "note": "treble-staff cadence chord tone (accompaniment), not the melody line"
+  },
+  {
+   "bar": 32,
+   "onsetBeats": 93.0,
+   "name": "D4",
+   "midi": 62,
+   "beats": 3.0,
+   "kind": "cadence-chord-tone",
+   "note": "treble-staff cadence chord tone (accompaniment), not the melody line"
+  },
+  {
+   "bar": 3,
+   "kind": "mordent",
+   "on": "E5",
+   "note": "articulation symbol in the LilyPond source; not a separate pitched event"
+  },
+  {
+   "bar": 5,
+   "kind": "mordent",
+   "on": "C5",
+   "note": "articulation symbol in the LilyPond source"
+  },
+  {
+   "bar": 11,
+   "kind": "mordent",
+   "on": "C5",
+   "note": "articulation symbol in the LilyPond source"
+  },
+  {
+   "bar": 13,
+   "kind": "mordent",
+   "on": "C5",
+   "note": "articulation symbol in the LilyPond source"
+  },
+  {
+   "bar": 30,
+   "kind": "prall",
+   "on": "B4",
+   "note": "articulation symbol in the LilyPond source"
+  }
+ ]
+}

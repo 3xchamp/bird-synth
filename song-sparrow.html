@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song Sparrow — a syrinx study</title>
+<style>
+  :root{
+    --paper:#f7f2e9; --paper2:#efe7d8; --ink:#2b2320; --ink-soft:#6d5f55;
+    --accent:#b35c1e; --accent-deep:#7e3f12; --line:#d9cdb8; --card:#fffdf8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    color:var(--ink);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:34px 22px 56px}
+  .kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent-deep);margin:0 0 8px}
+  h1{font-size:44px;font-weight:normal;margin:0 0 4px;line-height:1.05}
+  h1 .latin{font-style:italic;font-size:22px;color:var(--ink-soft)}
+  .sub{font-size:15.5px;line-height:1.55;color:var(--ink-soft);max-width:640px;margin:10px 0 0}
+  .sub b{color:var(--ink);font-weight:normal;border-bottom:1px solid var(--accent)}
+  hr.rule{border:none;border-top:1px solid var(--line);margin:26px 0}
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 14px;box-shadow:0 1px 0 #fff inset,0 10px 30px rgba(80,60,30,.07);
+  }
+  .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  button{
+    font-family:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--paper);padding:11px 26px;font-size:16px;letter-spacing:.04em;
+    transition:all .15s ease;
+  }
+  button:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent-deep)}
+  button:disabled{opacity:.45;cursor:default}
+  #singBtn{min-width:150px}
+  .morph{flex:1;min-width:260px}
+  .morph .labels{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .morph .labels .bird{color:var(--accent-deep)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:28px;cursor:pointer}
+  .morphVal{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:-2px;font-style:italic}
+  canvas#trace{width:100%;height:150px;display:block;margin-top:14px;background:#fdfaf3;border:1px solid var(--line);border-radius:6px}
+  .traceNote{font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  h2{font-size:13px;letter-spacing:.26em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);margin:30px 0 12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .card h3{margin:0;font-size:17px;font-weight:normal}
+  .card h3 .tag{font-size:10.5px;letter-spacing:.18em;color:var(--accent-deep);text-transform:uppercase;margin-left:8px}
+  .card .nums{font-size:13px;color:var(--ink-soft);line-height:1.5;font-variant-numeric:tabular-nums}
+  .card svg{display:block;width:100%;height:38px}
+  .card button{align-self:flex-start;padding:6px 18px;font-size:13.5px;background:transparent;color:var(--ink);border-color:var(--ink)}
+  .card button:hover{background:var(--ink);color:var(--paper)}
+  .foot{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-top:8px}
+  .foot b{color:var(--ink);font-weight:normal}
+  a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Bird-synth engine · Song Sparrow</p>
+  <h1>Song Sparrow <span class="latin">Melospiza melodia</span></h1>
+  <p class="sub">A syrinx, modeled — not sampled. Every pitch curve, note length and pause in this
+  instrument was <b>measured</b> from one reference recording: 63 notes, 4 complete songs, pitch-tracked
+  frame by frame. This bird's problem is <b>structure</b>: a pair of clear intro whistles, a half-second
+  buzz, then a rapid trill series at a measured ~11 notes a second, resolving on a high terminal note.
+  Nothing here was invented to “sound bird-like”; where the model simplifies, the notes at the foot
+  of the page say so.</p>
+
+  <hr class="rule">
+
+  <div class="stage">
+    <div class="row">
+      <button id="singBtn">▶&ensp;Sing</button>
+      <div class="morph">
+        <div class="labels"><span class="bird">Bird</span><span id="morphPct">0%</span><span>Electronic</span></div>
+        <input type="range" id="morph" min="0" max="1000" value="0">
+        <div class="morphVal" id="morphVal">measured contours · free timing · breathy sine</div>
+      </div>
+    </div>
+    <canvas id="trace" width="1600" height="300"></canvas>
+    <div class="traceNote">The model’s own pitch trace (what the oscillators were told to sing), log scale. Gridlines at measured landmarks: 2438 · 3000 · 3867 · 7594 Hz.</div>
+  </div>
+
+  <h2>Measured phrase types — hear each one alone</h2>
+  <div class="cards" id="cards"></div>
+
+  <hr class="rule">
+  <p class="foot"><b>Source.</b> Modeled from xeno-canto recording <b>XC1005250</b> — Song Sparrow,
+  recorded by <b>Ryan Douglas</b>, Damascus, Montgomery County, Maryland, 2025-06-08 ·
+  Creative Commons Attribution-ShareAlike 4.0 · XC grade A (verified on the live recording
+  page 2026-11-12). Background species on the recording page: none.
+  By measured phrase-to-floor contrast (gap floor −45.2 dB RMS vs phrases −17.9 dB) it was the
+  best-documented clean candidate of the set vetted for this build.
+  No audio from the recording is played or reused; the synth re-creates measured pitch
+  contours with oscillators. No recording audio is used anywhere in this page.</p>
+  <p class="foot"><b>Method, briefly.</b> Notes were segmented on the recording’s band envelope and
+  pitch-tracked by STFT peak-picking (1.5–9.5 kHz). Each phrase type below is the median of its
+  measured instances — contour, duration range and second-harmonic level included. The whole file
+  was scanned for aircraft/vehicle rumble: no low-frequency (60–500 Hz) swell exists in this file
+  (see BUILD-song-sparrow.md). A faint breath of filtered air rides under each note on a single
+  fixed path whose gain is shaped per note and returns to zero between notes. The
+  Bird⇄Electronic slider continuously interpolates pitch (toward an A-major-pentatonic grid),
+  timing (toward 112 BPM), and timbre (sine → saw + FM) — it is one instrument being pulled
+  across a line, not two presets. Full method and caveats: BUILD-song-sparrow.md.</p>
+</div>
+
+<script>
+'use strict';
+/* ============ MEASURED DATA — every measured value from song-sparrow-measurements.json ============
+   XC1005250 only. Contours/amps: 16-point median templates. gridDur / grid periods /
+   gridSongPause are design choices for the electronic end of the morph (documented in
+   BUILD-song-sparrow.md), not measurements. peakRel is the measured median peak
+   amplitude of the type, relative to the file peak; GAIN_SCALE below is the design
+   constant that turns it into a note gain. */
+const MEAS = {
+  "types": {
+    "P": {
+      "name": "Pre-intro ticks",
+      "n": 5,
+      "durMed": 0.027,
+      "durMin": 0.021,
+      "durMax": 0.043,
+      "fStart": 4875.0,
+      "fEnd": 6281.2,
+      "gridDur": 0.067,
+      "harm2": 0.003,
+      "peakRel": 0.081,
+      "voice": 1,
+      "contour": [
+        4875.0,
+        4903.1,
+        5015.6,
+        5203.1,
+        5203.1,
+        5203.1,
+        5203.1,
+        5315.6,
+        5512.5,
+        5840.6,
+        6234.4,
+        5953.1,
+        6018.8,
+        6215.6,
+        6281.2,
+        6281.2
+      ],
+      "amp": [
+        0.7777,
+        0.7465,
+        0.7209,
+        0.7762,
+        0.9137,
+        0.7942,
+        0.8192,
+        0.6102,
+        0.6298,
+        0.7182,
+        0.5963,
+        0.5916,
+        0.5084,
+        0.3972,
+        0.35,
+        0.3505
+      ]
+    },
+    "I": {
+      "name": "Intro whistle",
+      "n": 8,
+      "durMed": 0.19,
+      "durMin": 0.18,
+      "durMax": 0.207,
+      "fStart": 2437.5,
+      "fEnd": 2437.5,
+      "gridDur": 0.268,
+      "harm2": 0.035,
+      "peakRel": 0.139,
+      "voice": 0,
+      "contour": [
+        2437.5,
+        2437.5,
+        2414.1,
+        2404.7,
+        2390.6,
+        2414.1,
+        2414.1,
+        2418.8,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2460.9
+      ],
+      "amp": [
+        0.4548,
+        0.82,
+        0.9632,
+        0.9449,
+        0.9572,
+        0.9041,
+        0.8197,
+        0.7741,
+        0.7795,
+        0.693,
+        0.6684,
+        0.5845,
+        0.515,
+        0.4383,
+        0.3499,
+        0.2044
+      ]
+    },
+    "B": {
+      "name": "Buzz",
+      "n": 4,
+      "durMed": 0.508,
+      "durMin": 0.48,
+      "durMax": 0.528,
+      "fStart": 3867.2,
+      "fEnd": 3843.8,
+      "gridDur": 0.536,
+      "harm2": 0.008,
+      "peakRel": 0.352,
+      "voice": 0,
+      "contour": [
+        3773.4,
+        3875.0,
+        3875.0,
+        3890.6,
+        3904.7,
+        3867.2,
+        3895.3,
+        3890.6,
+        3825.0,
+        3843.8,
+        3867.2,
+        3820.3,
+        3825.0,
+        3878.1,
+        3867.2,
+        3796.9
+      ],
+      "amp": [
+        0.1806,
+        0.5369,
+        0.6302,
+        0.5929,
+        0.5437,
+        0.4736,
+        0.473,
+        0.4676,
+        0.4339,
+        0.4336,
+        0.6152,
+        0.4088,
+        0.5005,
+        0.3887,
+        0.3851,
+        0.0816
+      ]
+    },
+    "L": {
+      "name": "Low upslur",
+      "n": 11,
+      "durMed": 0.057,
+      "durMin": 0.049,
+      "durMax": 0.062,
+      "fStart": 2109.4,
+      "fEnd": 3000.0,
+      "gridDur": 0.134,
+      "harm2": 0.014,
+      "peakRel": 0.627,
+      "voice": 0,
+      "contour": [
+        2109.4,
+        2109.4,
+        2109.4,
+        2109.4,
+        2146.9,
+        2156.2,
+        3028.1,
+        3468.8,
+        3409.4,
+        3365.6,
+        3296.9,
+        3206.2,
+        3084.4,
+        3040.6,
+        2984.4,
+        2953.1
+      ],
+      "amp": [
+        0.101,
+        0.0903,
+        0.0818,
+        0.0727,
+        0.0583,
+        0.0338,
+        0.0258,
+        0.0717,
+        0.2175,
+        0.4971,
+        0.9068,
+        0.9205,
+        0.5742,
+        0.1046,
+        0.0876,
+        0.0456
+      ]
+    },
+    "H": {
+      "name": "High downslur",
+      "n": 5,
+      "durMed": 0.104,
+      "durMin": 0.1,
+      "durMax": 0.107,
+      "fStart": 6843.8,
+      "fEnd": 5320.3,
+      "gridDur": 0.268,
+      "harm2": 0.002,
+      "peakRel": 0.802,
+      "voice": 1,
+      "contour": [
+        6187.5,
+        6403.1,
+        7456.2,
+        7528.1,
+        7546.9,
+        7546.9,
+        7546.9,
+        7534.4,
+        4593.8,
+        4593.8,
+        4562.5,
+        4640.6,
+        5700.0,
+        5493.7,
+        5228.1,
+        4734.4
+      ],
+      "amp": [
+        0.0801,
+        0.5465,
+        0.367,
+        0.4369,
+        0.4249,
+        0.2389,
+        0.0378,
+        0.0326,
+        0.1091,
+        0.5403,
+        0.676,
+        0.2218,
+        0.5653,
+        0.8522,
+        0.0779,
+        0.0355
+      ]
+    },
+    "h": {
+      "name": "High chirp",
+      "n": 7,
+      "durMed": 0.037,
+      "durMin": 0.036,
+      "durMax": 0.041,
+      "fStart": 6234.4,
+      "fEnd": 7593.8,
+      "gridDur": 0.134,
+      "harm2": 0.0,
+      "peakRel": 0.501,
+      "voice": 1,
+      "contour": [
+        6234.4,
+        6234.4,
+        6234.4,
+        6328.1,
+        6421.9,
+        7140.6,
+        7462.5,
+        7500.0,
+        7518.8,
+        7546.9,
+        7546.9,
+        7546.9,
+        7565.6,
+        7593.8,
+        7593.8,
+        7593.8
+      ],
+      "amp": [
+        0.1274,
+        0.8273,
+        0.8826,
+        0.3347,
+        0.162,
+        0.1445,
+        0.1547,
+        0.1608,
+        0.1789,
+        0.1877,
+        0.1793,
+        0.2027,
+        0.191,
+        0.1827,
+        0.1185,
+        0.0578
+      ]
+    },
+    "M": {
+      "name": "Mid note",
+      "n": 7,
+      "durMed": 0.05,
+      "durMin": 0.044,
+      "durMax": 0.056,
+      "fStart": 4593.8,
+      "fEnd": 4898.4,
+      "gridDur": 0.134,
+      "harm2": 0.003,
+      "peakRel": 0.486,
+      "voice": 1,
+      "contour": [
+        4593.8,
+        4593.8,
+        4593.8,
+        4593.8,
+        4534.4,
+        4359.4,
+        4593.8,
+        5628.1,
+        5718.8,
+        5662.5,
+        5546.9,
+        5462.5,
+        5343.8,
+        5181.2,
+        4778.1,
+        4500.0
+      ],
+      "amp": [
+        0.1305,
+        0.2822,
+        0.4962,
+        0.7891,
+        0.7491,
+        0.4569,
+        0.2538,
+        0.3493,
+        0.5556,
+        0.8538,
+        0.9859,
+        0.8062,
+        0.3858,
+        0.0696,
+        0.064,
+        0.0586
+      ]
+    },
+    "C": {
+      "name": "Chip",
+      "n": 7,
+      "durMed": 0.029,
+      "durMin": 0.028,
+      "durMax": 0.044,
+      "fStart": 3421.9,
+      "fEnd": 2976.6,
+      "gridDur": 0.134,
+      "harm2": 0.009,
+      "peakRel": 0.513,
+      "voice": 0,
+      "contour": [
+        3421.9,
+        3421.9,
+        3400.0,
+        3365.6,
+        3328.1,
+        3296.9,
+        3262.5,
+        3215.6,
+        3153.1,
+        3112.5,
+        3093.8,
+        3078.1,
+        3046.9,
+        3000.0,
+        2984.4,
+        2953.1
+      ],
+      "amp": [
+        0.1237,
+        0.2445,
+        0.378,
+        0.5616,
+        0.7741,
+        0.9656,
+        0.9788,
+        0.8365,
+        0.6896,
+        0.6092,
+        0.3939,
+        0.1752,
+        0.1137,
+        0.1005,
+        0.1079,
+        0.0554
+      ]
+    },
+    "T": {
+      "name": "Terminal high",
+      "n": 3,
+      "durMed": 0.121,
+      "durMin": 0.109,
+      "durMax": 0.176,
+      "fStart": 7593.8,
+      "fEnd": 7593.8,
+      "gridDur": 0.268,
+      "harm2": 0.007,
+      "peakRel": 0.078,
+      "voice": 1,
+      "contour": [
+        7546.9,
+        7593.8,
+        7593.8,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        5015.6,
+        7593.8,
+        7593.8,
+        7593.8
+      ],
+      "amp": [
+        0.8133,
+        0.8176,
+        0.807,
+        0.846,
+        0.6729,
+        0.5672,
+        0.5769,
+        0.5699,
+        0.6091,
+        0.6704,
+        0.6833,
+        0.4957,
+        0.5257,
+        0.3917,
+        0.4278,
+        0.3674
+      ]
+    },
+    "E": {
+      "name": "End note",
+      "n": 2,
+      "durMed": 0.049,
+      "durMin": 0.049,
+      "durMax": 0.049,
+      "fStart": 4476.6,
+      "fEnd": 4406.2,
+      "gridDur": 0.134,
+      "harm2": 0.008,
+      "peakRel": 0.608,
+      "voice": 1,
+      "contour": [
+        4453.1,
+        4473.4,
+        4453.1,
+        4467.2,
+        4476.6,
+        4453.1,
+        4453.1,
+        4453.1,
+        4451.6,
+        4410.9,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2
+      ],
+      "amp": [
+        0.105,
+        0.348,
+        0.2838,
+        0.479,
+        0.6852,
+        0.8326,
+        0.9389,
+        0.9919,
+        0.9894,
+        0.9363,
+        0.8294,
+        0.7045,
+        0.5286,
+        0.3324,
+        0.1599,
+        0.0473
+      ]
+    },
+    "W": {
+      "name": "Flat chip",
+      "n": 4,
+      "durMed": 0.068,
+      "durMin": 0.034,
+      "durMax": 0.114,
+      "fStart": 3585.9,
+      "fEnd": 3492.2,
+      "gridDur": 0.134,
+      "harm2": 0.004,
+      "peakRel": 0.091,
+      "voice": 0,
+      "contour": [
+        3585.9,
+        3585.9,
+        3585.9,
+        3548.4,
+        3492.2,
+        3492.2,
+        3492.2,
+        3482.8,
+        3492.2,
+        3468.8,
+        3476.6,
+        3492.2,
+        3492.2,
+        3492.2,
+        3492.2,
+        3468.8
+      ],
+      "amp": [
+        0.6915,
+        0.7331,
+        0.5799,
+        0.6134,
+        0.657,
+        0.7221,
+        0.8363,
+        0.9569,
+        0.8599,
+        0.735,
+        0.8147,
+        0.7086,
+        0.5617,
+        0.4397,
+        0.4202,
+        0.3105
+      ]
+    }
+  },
+  "grammar": {
+    "transitions": {
+      "B>C": {
+        "min": 0.609,
+        "med": 0.609,
+        "max": 0.609,
+        "grid": 0.67
+      },
+      "B>L": {
+        "min": 0.553,
+        "med": 0.593,
+        "max": 0.599,
+        "grid": 0.67
+      },
+      "C>H": {
+        "min": 0.056,
+        "med": 0.056,
+        "max": 0.056,
+        "grid": 0.268
+      },
+      "C>T": {
+        "min": 0.12,
+        "med": 0.122,
+        "max": 0.125,
+        "grid": 0.268
+      },
+      "C>W": {
+        "min": 0.275,
+        "med": 0.275,
+        "max": 0.275,
+        "grid": 0.268
+      },
+      "E>W": {
+        "min": 0.533,
+        "med": 0.533,
+        "max": 0.533,
+        "grid": 0.268
+      },
+      "H>C": {
+        "min": 0.183,
+        "med": 0.183,
+        "max": 0.183,
+        "grid": 0.402
+      },
+      "H>L": {
+        "min": 0.143,
+        "med": 0.149,
+        "max": 0.154,
+        "grid": 0.402
+      },
+      "I>B": {
+        "min": 0.25,
+        "med": 0.259,
+        "max": 0.268,
+        "grid": 0.402
+      },
+      "I>I": {
+        "min": 0.355,
+        "med": 0.359,
+        "max": 0.374,
+        "grid": 0.402
+      },
+      "L>H": {
+        "min": 0.087,
+        "med": 0.088,
+        "max": 0.09,
+        "grid": 0.268
+      },
+      "L>T": {
+        "min": 0.141,
+        "med": 0.141,
+        "max": 0.141,
+        "grid": 0.268
+      },
+      "L>h": {
+        "min": 0.075,
+        "med": 0.082,
+        "max": 0.089,
+        "grid": 0.268
+      },
+      "M>C": {
+        "min": 0.125,
+        "med": 0.126,
+        "max": 0.129,
+        "grid": 0.268
+      },
+      "M>L": {
+        "min": 0.089,
+        "med": 0.096,
+        "max": 0.098,
+        "grid": 0.268
+      },
+      "P>I": {
+        "min": 0.135,
+        "med": 0.135,
+        "max": 0.135,
+        "grid": 0.134
+      },
+      "P>P": {
+        "min": 0.149,
+        "med": 0.151,
+        "max": 0.157,
+        "grid": 0.134
+      },
+      "T>C": {
+        "min": 0.577,
+        "med": 0.577,
+        "max": 0.577,
+        "grid": 0.402
+      },
+      "T>E": {
+        "min": 0.184,
+        "med": 0.208,
+        "max": 0.232,
+        "grid": 0.402
+      },
+      "W>C": {
+        "min": 0.331,
+        "med": 0.331,
+        "max": 0.331,
+        "grid": 0.268
+      },
+      "h>M": {
+        "min": 0.054,
+        "med": 0.055,
+        "max": 0.058,
+        "grid": 0.268
+      }
+    },
+    "songPause": [
+      7.156,
+      8.428,
+      9.666
+    ],
+    "gridSongPause": 4.286,
+    "forms": [
+      [
+        "P",
+        "P",
+        "P",
+        "P",
+        "P",
+        "I",
+        "I",
+        "B",
+        "L",
+        "H",
+        "L",
+        "H",
+        "L",
+        "H",
+        "C"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "L",
+        "h",
+        "M",
+        "C",
+        "H",
+        "L",
+        "h",
+        "M",
+        "C",
+        "T",
+        "E"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "C",
+        "H",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "C",
+        "T",
+        "E",
+        "W"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "L",
+        "T",
+        "C",
+        "W",
+        "C"
+      ]
+    ]
+  },
+  "trill": {
+    "rateMed": 11.101,
+    "rateMin": 8.032,
+    "rateMax": 13.025,
+    "notesMin": 7.0,
+    "notesMax": 10.0,
+    "spanMed": 0.756
+  }
+};
+const GRID = { bpm:112, beat:60/112 };           /* design choice for the electronic end */
+const PENTA = new Set([9,11,1,4,6]);             /* A-major pentatonic pitch classes (design choice) */
+const GAIN_SCALE = 0.55;                          /* design choice: measured peakRel -> note peak gain */
+
+let actx=null, master, voiceBus, breathGain, analyser, noiseSrc;
+let morph=0;
+const BREATH_REL = 0.05;   /* breath peak cap: 5% of a note's peak gain (the v1 failure fix — see initAudio) */
+const traceEvents=[];   /* {t0, dur, curve:[Hz]} — the model's own scheduled pitch */
+
+function initAudio(){
+  if (actx) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  master = actx.createGain(); master.gain.value = 0.9;
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value=-12; comp.ratio.value=20; comp.knee.value=0;
+  comp.attack.value=0.003; comp.release.value=0.25;
+  analyser = actx.createAnalyser(); analyser.fftSize = 2048;
+  master.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+
+  /* resonant chain — a fixed vocal-tract coloration (design choice, sits inside the measured band) */
+  voiceBus = actx.createGain();
+  const bp = actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3200; bp.Q.value=0.55;
+  const pk = actx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=4200; pk.Q.value=1.1; pk.gain.value=3.5;
+  const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=9500;
+  voiceBus.connect(bp); bp.connect(pk); pk.connect(lp); lp.connect(master);
+
+  /* breath: ONE fixed path — looped noise -> bandpass -> breathGain -> master.
+     Connected exactly once, here, and never reconnected. Per-note shaping happens
+     ONLY on breathGain.gain (see playNote). The cardinal v1 page connected a fresh
+     parallel tap per note; the taps stacked and the noise multiplied until it
+     buried the bird — that defect is designed out here. */
+  const len = 2*actx.sampleRate, buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0); for (let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  noiseSrc = actx.createBufferSource(); noiseSrc.buffer=buf; noiseSrc.loop=true;
+  const nf = actx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=2400; nf.Q.value=0.7;
+  breathGain = actx.createGain(); breathGain.gain.value=0;
+  noiseSrc.connect(nf); nf.connect(breathGain); breathGain.connect(master);
+  noiseSrc.start();
+}
+
+function quantize(f){
+  const midi = 69 + 12*Math.log2(f/440);
+  let best=null, bd=1e9;
+  for (let m=Math.floor(midi)-2; m<=Math.ceil(midi)+2; m++){
+    const pc = ((m%12)+12)%12;
+    if (!PENTA.has(pc)) continue;
+    const dd = Math.abs(m-midi); if (dd<bd){ bd=dd; best=m; }
+  }
+  return 440*Math.pow(2,(best-69)/12);
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+function morphFreq(f){
+  if (morph<=0) return f;
+  const q = quantize(f);
+  return Math.exp(lerp(Math.log(f), Math.log(q), morph));
+}
+function sampleIn(tri){ /* [min, med, max] -> draw biased to median */
+  const u=Math.random();
+  return u<0.5 ? lerp(tri[0],tri[1],u*2) : lerp(tri[1],tri[2],(u-0.5)*2);
+}
+
+/* ---- one syrinx note: fundamental + measured 2nd harmonic + saw/FM edge by morph + breath ---- */
+function playNote(typeKey, when, opts={}){
+  const T = MEAS.types[typeKey];
+  const durBird = opts.dur || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur, morph);
+  const fScale = opts.freqScale || 1;
+  const peak = T.peakRel * GAIN_SCALE * (opts.gainScale || 1);
+  const curve = T.contour.map(f => morphFreq(f*fScale));
+  const f32 = new Float32Array(curve);
+  traceEvents.push({t0:when, dur, curve:[...curve]});
+
+  const pan = actx.createStereoPanner(); pan.pan.value = T.voice===0 ? -0.18 : 0.18;
+  pan.connect(voiceBus);
+
+  const g = actx.createGain();
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak)), when, dur);
+  g.connect(pan);
+
+  const car = actx.createOscillator(); car.type='sine';
+  car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g);
+
+  const hGain = actx.createGain();
+  hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm2)), when, dur);
+  const harm = actx.createOscillator(); harm.type='sine';
+  harm.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*2)), when, dur);
+  harm.connect(hGain); hGain.connect(pan);
+
+  if (morph > 0.02){
+    const sawLP = actx.createBiquadFilter(); sawLP.type='lowpass';
+    sawLP.frequency.value = lerp(4500, 12000, morph);
+    const sGain = actx.createGain();
+    sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*0.30*morph)), when, dur);
+    const saw = actx.createOscillator(); saw.type='sawtooth';
+    saw.frequency.setValueCurveAtTime(f32, when, dur);
+    saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(pan);
+    const mod = actx.createOscillator(); mod.type='sine';
+    mod.frequency.setValueCurveAtTime(f32, when, dur);
+    const mGain = actx.createGain();
+    mGain.gain.setValueCurveAtTime(new Float32Array(curve.map(f=>f*1.5*morph)), when, dur);
+    mod.connect(mGain); mGain.connect(car.frequency);
+    saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+  }
+  /* breath under the note: an envelope on the SINGLE breathGain (fixed path, see
+     initAudio). Endpoints are forced to 0, so the breath is fully closed between
+     notes and through every pause; the peak is capped at BREATH_REL x the note's
+     own peak gain. No nodes are created, connected or disconnected here. */
+  const bCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*BREATH_REL*(1-0.6*morph));
+  breathGain.gain.setValueCurveAtTime(new Float32Array(bCurve), when, dur);
+
+  car.start(when); car.stop(when+dur+0.05);
+  harm.start(when); harm.stop(when+dur+0.05);
+}
+
+/* ================= Sing: the measured song grammar ================= */
+let singing=false, schedTimer=null, nextBoutAt=0, planIdx=0, boutPlan=null, cachedPlan=null;
+
+/* Song grammar, measured on XC1005250 (4 songs). The generator picks one of the
+   four observed song forms verbatim (element order is never invented), then draws
+   each element's duration from its measured [min, med, max] and each onset-to-onset
+   period from the measured transition [min, med, max] for that ordered pair.
+   Grid side uses the design grid periods in MEAS.grammar. */
+function makeSongPlan(){
+  const forms = MEAS.grammar.forms;
+  const seq = forms[Math.floor(Math.random()*forms.length)];
+  const evs = [];
+  let bo=0, go=0;
+  seq.forEach((type, i)=>{
+    evs.push({type, birdOff:bo, gridOff:go,
+      durBird:MEAS.types[type].durMed, durGrid:MEAS.types[type].gridDur});
+    if (i < seq.length-1){
+      const tr = MEAS.grammar.transitions[type+'>'+seq[i+1]];
+      bo += sampleIn([tr.min, tr.med, tr.max]); go += tr.grid;
+    }
+  });
+  const lastEv = evs[evs.length-1];
+  return {evs, seq:[...seq], durBird:lastEv.birdOff+lastEv.durBird, durGrid:lastEv.gridOff+lastEv.durGrid};
+}
+
+let planStart = 0, lastAt = 0;
+function schedule(){
+  if (!singing) return;
+  const now = actx.currentTime;
+  if (!boutPlan && nextBoutAt < now + 1.0){
+    boutPlan = (morph>=0.5 && cachedPlan) ? cachedPlan : makeSongPlan();
+    if (morph>=0.5 && !cachedPlan) cachedPlan = boutPlan;
+    planStart = nextBoutAt; planIdx = 0; lastAt = 0;
+  }
+  if (!boutPlan) return;
+  const ahead = now + 0.18;
+  while (planIdx < boutPlan.evs.length){
+    const ev = boutPlan.evs[planIdx];
+    let at = planStart + lerp(ev.birdOff, ev.gridOff, morph);
+    if (at > ahead) break;
+    at = Math.max(at, now+0.01, lastAt+0.005);
+    playNote(ev.type, at, ev);
+    lastAt = at; planIdx++;
+  }
+  if (planIdx >= boutPlan.evs.length){
+    const boutDur = lerp(boutPlan.durBird, boutPlan.durGrid, morph);
+    const pause = lerp(sampleIn(MEAS.grammar.songPause), MEAS.grammar.gridSongPause, morph);
+    nextBoutAt = planStart + boutDur + pause;
+    boutPlan = null;
+  }
+}
+
+const singBtn = document.getElementById('singBtn');
+singBtn.addEventListener('click', ()=>{
+  initAudio(); if (actx.state==='suspended') actx.resume();
+  singing = !singing;
+  singBtn.innerHTML = singing ? '■&ensp;Stop' : '▶&ensp;Sing';
+  if (singing){
+    cachedPlan=null; boutPlan=null; planIdx=0;
+    nextBoutAt = actx.currentTime + 0.15;
+    schedTimer = setInterval(schedule, 30);
+    schedule();
+  } else {
+    clearInterval(schedTimer);
+  }
+});
+
+/* ================= phrase cards ================= */
+const cardsEl = document.getElementById('cards');
+const order = ['SONG','P','I','B','L','H','h','M','C','T','E','W'];
+const desc = {
+  SONG:'One full song in a measured form: intro pair, buzz, the rapid trill series, and the high terminal resolution.',
+  P:'A quick rising tick, ~4.9 to ~6.3 kHz. Five of them precede the first song only — an alternate opening the other three songs skip.',
+  I:'The clear opener — a flat whistle at ~2.44 kHz, always sung twice before the buzz.',
+  B:'The buzz — a half-second sustained note at ~3.87 kHz between the intro pair and the trill. The loudest sustained element in the song.',
+  L:'The trill’s low gear — a short upslur from ~2.1 to ~3.0 kHz, the commonest note in the song.',
+  H:'The trill’s long high form — a downslur from ~6.8 kHz to ~5.3 kHz. Probably a fused chirp+mid pair whose internal gap is too small to segment.',
+  h:'The trill’s high chirp — a fast up-chirp from ~6.2 to ~7.6 kHz in under 40 ms.',
+  M:'The trill’s mid note — a short, fairly flat note around ~4.6–4.9 kHz.',
+  C:'A falling chip, ~3.4 kHz down to ~3.0 kHz in about 30 ms — the trill’s punctuation.',
+  T:'The resolution — a high, flat terminal note at ~7.6 kHz that closes the song.',
+  E:'The full stop — a short flat note at ~4.45 kHz immediately after the terminal high. Only twice in four songs, always in that spot.',
+  W:'A flat chip at ~3.5 kHz, heard after terminals and twice alone between songs — a post-song afterthought, not part of the core sequence.'
+};
+function sparkSVG(contour){
+  const w=220,h=38, lo=1300, hi=8500;
+  const pts = contour.map((f,i)=>{
+    const x=(i/(contour.length-1))*w;
+    const y=h-4-((Math.log(f)-Math.log(lo))/(Math.log(hi)-Math.log(lo)))*(h-8);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#b35c1e" stroke-width="1.6"/></svg>`;
+}
+for (const key of order){
+  const card = document.createElement('div'); card.className='card';
+  if (key==='SONG'){
+    card.innerHTML = `<h3>The song<span class="tag">form 2 of 4</span></h3>
+      ${sparkSVG(MEAS.types.I.contour.concat(MEAS.types.B.contour, MEAS.types.L.contour, MEAS.types.T.contour))}
+      <div class="nums">I I B + trill series + T E · songs of 14–17 notes · trill ${MEAS.trill.rateMed} notes/s (${MEAS.trill.rateMin}–${MEAS.trill.rateMax}) · pauses 7.16–9.67 s<br>one of the 4 measured song forms, played with measured timing</div>
+      <div class="nums" style="font-style:italic">${desc.SONG}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play song';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      const seq = MEAS.grammar.forms[1];
+      let off = 0; const t0 = actx.currentTime+0.06;
+      seq.forEach((type, i)=>{
+        playNote(type, t0+off, {});
+        if (i < seq.length-1){
+          const tr = MEAS.grammar.transitions[type+'>'+seq[i+1]];
+          off += lerp(tr.med, tr.grid, morph);
+        }
+      });
+    });
+    card.appendChild(b);
+  } else {
+    const T = MEAS.types[key];
+    const extra = key==='B' || key==='L' || key==='H' || key==='h' || key==='M' || key==='C'
+      ? `<br>trill element · series rate ${MEAS.trill.rateMed} notes/s (${MEAS.trill.rateMin}–${MEAS.trill.rateMax})` : '';
+    card.innerHTML = `<h3>${T.name}<span class="tag">${key}</span></h3>
+      ${sparkSVG(T.contour)}
+      <div class="nums">${Math.round(T.fStart)} → ${Math.round(T.fEnd)} Hz · ${T.durMed.toFixed(3)} s
+      (${T.durMin.toFixed(2)}–${T.durMax.toFixed(2)}) · n = ${T.n} measured${extra}</div>
+      <div class="nums" style="font-style:italic">${desc[key]}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      playNote(key, actx.currentTime+0.06, {});
+    });
+    card.appendChild(b);
+  }
+  cardsEl.appendChild(card);
+}
+
+/* ================= morph slider ================= */
+const morphEl = document.getElementById('morph');
+const morphVal = document.getElementById('morphVal');
+const morphPct = document.getElementById('morphPct');
+function morphText(m){
+  if (m<0.02) return 'measured contours · free timing · breathy sine';
+  if (m<0.35) return 'pitch leaning toward the scale · timing steadying · a little edge';
+  if (m<0.65) return 'half bird, half machine · songs start to loop';
+  if (m<0.98) return 'scale-locked pitch · near-grid timing · saw + FM sheen';
+  return 'A-major pentatonic · 112 BPM grid · full electronic timbre, still the sparrow’s contours';
+}
+morphEl.addEventListener('input', ()=>{
+  morph = morphEl.value/1000;
+  morphPct.textContent = Math.round(morph*100)+'%';
+  morphVal.textContent = morphText(morph);
+  if (morph<0.5) cachedPlan=null;
+});
+
+/* ================= pitch trace ================= */
+const cv = document.getElementById('trace'), cx = cv.getContext('2d');
+const LANDMARKS = [2438, 3000, 3867, 7594];   /* measured medians: I start · L end · B start · T start */
+function drawTrace(){
+  requestAnimationFrame(drawTrace);
+  const W=cv.width, H=cv.height;
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle='#fdfaf3'; cx.fillRect(0,0,W,H);
+  const fLo=1200, fHi=9000, win=9;
+  const yOf = f => H-14 - ((Math.log(f)-Math.log(fLo))/(Math.log(fHi)-Math.log(fLo)))*(H-28);
+  cx.strokeStyle='#e4d9c4'; cx.fillStyle='#9a8a76'; cx.font='20px Georgia'; cx.lineWidth=1;
+  for (const f of LANDMARKS){
+    cx.beginPath(); cx.moveTo(0,yOf(f)); cx.lineTo(W,yOf(f)); cx.stroke();
+    cx.fillText(f+' Hz', 10, yOf(f)-6);
+  }
+  if (!actx) return;
+  const now = actx.currentTime;
+  cx.strokeStyle='#b35c1e'; cx.lineWidth=2.4; cx.beginPath();
+  let pen=false;
+  for (const ev of traceEvents){
+    for (let i=0;i<ev.curve.length;i++){
+      const tt = ev.t0 + ev.dur*i/(ev.curve.length-1);
+      const age = now-tt;
+      if (age<0 || age>win){ if (age>win) pen=false; continue; }
+      const x = W - (age/win)*W, y = yOf(ev.curve[i]);
+      if (!pen){ cx.moveTo(x,y); pen=true; } else cx.lineTo(x,y);
+    }
+    pen=false;
+  }
+  cx.stroke();
+  while (traceEvents.length && now-traceEvents[0].t0 > win+2) traceEvents.shift();
+}
+drawTrace();
+</script>
+</body>
+</html>

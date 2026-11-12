@@ -1,0 +1,634 @@
+{
+ "species": "Great Horned Owl (Bubo virginianus)",
+ "primary_reference": {
+  "file": "XC11638.mp3",
+  "xeno_canto_id": "XC11638",
+  "recordist": "Nathan Pieplow",
+  "location": "Boulder, Colorado, US (1700 m)",
+  "date": "2007-03-16 05:30",
+  "license": "CC BY-NC-ND 2.5",
+  "xc_grade": "A",
+  "background_species": "none",
+  "sample_rate_hz": 44100,
+  "duration_s": 35.02,
+  "supplied_by": "Jimmy (xeno-canto.org/11638), 2026-11-11"
+ },
+ "method": "Owl retune of the v1 pipeline: STFT (4096-pt Hann, 256 hop -> 10.8 Hz bins, 5.8 ms steps) dominant-peak pitch track in 150-900 Hz; hoot segmentation on the 150-900 Hz band Hilbert envelope (5 ms smoothing): body pass onset -12 dB / offset -17 dB rel. file peak, min off-time 60 ms, min hoot 120 ms; sensitive pass onset -16 / offset -21 dB, extras kept only if non-overlapping with body hoots and spectral-peak prominence >= 8 dB. The thresholds were set from this file's measured in-band floor (envelope median -30 dB, p95 -25 dB between series; hoot peaks p95 -2 dB) \u2014 the v1 cardinal thresholds (-24/-31 dB) sit inside this floor and never close, which is why the first pass fused the whole file into one span. Within each hoot, pitch/harmonic statistics use only frames whose band envelope is >= -22 dB, because the quiet floor is broad low-frequency noise wandering 200-290 Hz and unmasked edge frames track it instead of the hoot. Per hoot: f_start/f_end = median track over first/last 20% of kept frames, f_med = whole hoot, f_peak/f_min = 95th/5th percentile; harm2/harm3 = median frame ratio of the STFT magnitude at 2f0 / 3f0 to the fundamental; peak_amp_rel = max of the band envelope (linear, file peak-normalized). Contour and amplitude templates = per-hoot tracks resampled to 16 normalized points, median across instances of the position. Series = hoot groups split at gaps > 3.0 s; positions numbered from 1 within each series. Contamination scan (v2 battery): short-time RMS in 0.25 s windows for the 40-500 Hz band and full band; a swell = 1 s-smoothed level > file median + 7 dB sustained >= 1.5 s (spans < 2 s apart merged).",
+ "contamination_scan": {
+  "low_freq_band_hz": [
+   40,
+   500
+  ],
+  "lf_baseline_db": -30.8,
+  "lf_swell_spans_s": [
+   [
+    1.25,
+    4.0,
+    16.7
+   ],
+   [
+    31.25,
+    34.0,
+    17.3
+   ]
+  ],
+  "broadband_baseline_db": -29.8,
+  "broadband_swell_spans_s": [
+   [
+    1.25,
+    4.0,
+    15.9
+   ],
+   [
+    31.25,
+    34.0,
+    16.5
+   ]
+  ],
+  "spans_explained": "For this recording the owl IS a low-frequency source: every LF and broadband swell span coincides with one of the two hoot series; the ~27 s between series stays at the flat baseline in both bands, so there is no sustained rumble outside the bird itself.",
+  "verdict": "none found \u2014 no low-frequency rumble swell and no unexplained broadband swell anywhere outside the two hoot series in the 35.0 s file; no span excluded, no hoot contaminated.",
+  "hoots_in_lf_spans": 8
+ },
+ "body_hoot_count": 8,
+ "sensitive_pass_extras": [],
+ "hoots": [
+  {
+   "t0": 1.124,
+   "t1": 1.271,
+   "dur": 0.147,
+   "series": 0,
+   "position": 1,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 317.6,
+   "harm2": 0.0234,
+   "harm3": 0.0073,
+   "peak_amp_rel": 0.4924
+  },
+  {
+   "t0": 1.466,
+   "t1": 1.846,
+   "dur": 0.379,
+   "series": 0,
+   "position": 2,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 323.0,
+   "harm2": 0.0213,
+   "harm3": 0.0027,
+   "peak_amp_rel": 0.7652
+  },
+  {
+   "t0": 2.518,
+   "t1": 2.984,
+   "dur": 0.466,
+   "series": 0,
+   "position": 3,
+   "f_start_hz": 323.0,
+   "f_med_hz": 312.2,
+   "f_end_hz": 301.5,
+   "harm2": 0.0321,
+   "harm3": 0.0041,
+   "peak_amp_rel": 0.7646
+  },
+  {
+   "t0": 3.27,
+   "t1": 3.673,
+   "dur": 0.402,
+   "series": 0,
+   "position": 4,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 312.2,
+   "harm2": 0.0168,
+   "harm3": 0.0026,
+   "peak_amp_rel": 0.9693
+  },
+  {
+   "t0": 31.138,
+   "t1": 31.28,
+   "dur": 0.142,
+   "series": 1,
+   "position": 1,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 317.6,
+   "harm2": 0.0374,
+   "harm3": 0.0201,
+   "peak_amp_rel": 0.4551
+  },
+  {
+   "t0": 31.477,
+   "t1": 31.852,
+   "dur": 0.375,
+   "series": 1,
+   "position": 2,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 323.0,
+   "harm2": 0.0212,
+   "harm3": 0.0062,
+   "peak_amp_rel": 0.8086
+  },
+  {
+   "t0": 32.529,
+   "t1": 32.992,
+   "dur": 0.463,
+   "series": 1,
+   "position": 3,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 312.2,
+   "harm2": 0.0189,
+   "harm3": 0.0044,
+   "peak_amp_rel": 0.8422
+  },
+  {
+   "t0": 33.282,
+   "t1": 33.674,
+   "dur": 0.392,
+   "series": 1,
+   "position": 4,
+   "f_start_hz": 323.0,
+   "f_med_hz": 323.0,
+   "f_end_hz": 312.2,
+   "harm2": 0.0202,
+   "harm3": 0.0047,
+   "peak_amp_rel": 0.8126
+  }
+ ],
+ "series": [
+  {
+   "index": 0,
+   "t_start": 1.124,
+   "t_end": 3.673,
+   "n_hoots": 4,
+   "hoot_dur_s": {
+    "median": 0.391,
+    "min": 0.147,
+    "max": 0.466,
+    "n": 4
+   },
+   "gap_in_s": {
+    "median": 0.286,
+    "min": 0.195,
+    "max": 0.672,
+    "n": 3
+   },
+   "pause_after_s": 27.465
+  },
+  {
+   "index": 1,
+   "t_start": 31.138,
+   "t_end": 33.674,
+   "n_hoots": 4,
+   "hoot_dur_s": {
+    "median": 0.384,
+    "min": 0.142,
+    "max": 0.463,
+    "n": 4
+   },
+   "gap_in_s": {
+    "median": 0.29,
+    "min": 0.197,
+    "max": 0.677,
+    "n": 3
+   },
+   "pause_after_s": null
+  }
+ ],
+ "series_counts": {
+  "median": 4.0,
+  "min": 4.0,
+  "max": 4.0,
+  "n": 2
+ },
+ "transitions": {
+  "P1>P2": {
+   "period_s": {
+    "median": 0.34,
+    "min": 0.339,
+    "max": 0.342,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.196,
+    "min": 0.195,
+    "max": 0.197,
+    "n": 2
+   }
+  },
+  "P2>P3": {
+   "period_s": {
+    "median": 1.052,
+    "min": 1.052,
+    "max": 1.052,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.675,
+    "min": 0.672,
+    "max": 0.677,
+    "n": 2
+   }
+  },
+  "P3>P4": {
+   "period_s": {
+    "median": 0.752,
+    "min": 0.752,
+    "max": 0.753,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.288,
+    "min": 0.286,
+    "max": 0.29,
+    "n": 2
+   }
+  }
+ },
+ "series_pause_s": {
+  "median": 27.465,
+  "min": 27.465,
+  "max": 27.465,
+  "n": 1
+ },
+ "positions": {
+  "1": {
+   "position": 1,
+   "n_instances": 2,
+   "dur_s": {
+    "median": 0.144,
+    "min": 0.142,
+    "max": 0.147,
+    "n": 2
+   },
+   "f_start_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_med_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_end_hz": {
+    "median": 317.615,
+    "min": 317.615,
+    "max": 317.615,
+    "n": 2
+   },
+   "f_peak_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_min_hz": {
+    "median": 312.231,
+    "min": 312.231,
+    "max": 312.231,
+    "n": 2
+   },
+   "harm2_ratio": {
+    "median": 0.03,
+    "min": 0.023,
+    "max": 0.037,
+    "n": 2
+   },
+   "harm3_ratio": {
+    "median": 0.014,
+    "min": 0.007,
+    "max": 0.02,
+    "n": 2
+   },
+   "peak_amp_rel": {
+    "median": 0.474,
+    "min": 0.455,
+    "max": 0.492,
+    "n": 2
+   },
+   "contour_template_hz": [
+    312.2,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    316.5,
+    312.2
+   ],
+   "amp_template": [
+    0.5312,
+    0.7874,
+    0.7998,
+    0.8827,
+    0.944,
+    0.7711,
+    0.4591,
+    0.1686,
+    0.1673,
+    0.2063,
+    0.3264,
+    0.3038,
+    0.1691,
+    0.275,
+    0.4172,
+    0.3012
+   ]
+  },
+  "2": {
+   "position": 2,
+   "n_instances": 2,
+   "dur_s": {
+    "median": 0.377,
+    "min": 0.375,
+    "max": 0.379,
+    "n": 2
+   },
+   "f_start_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_med_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_end_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_peak_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_min_hz": {
+    "median": 312.231,
+    "min": 312.231,
+    "max": 312.231,
+    "n": 2
+   },
+   "harm2_ratio": {
+    "median": 0.021,
+    "min": 0.021,
+    "max": 0.021,
+    "n": 2
+   },
+   "harm3_ratio": {
+    "median": 0.004,
+    "min": 0.003,
+    "max": 0.006,
+    "n": 2
+   },
+   "peak_amp_rel": {
+    "median": 0.787,
+    "min": 0.765,
+    "max": 0.809,
+    "n": 2
+   },
+   "contour_template_hz": [
+    312.2,
+    318.7,
+    323.0,
+    312.2,
+    319.1,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    320.8,
+    323.0,
+    323.0,
+    318.7,
+    312.2
+   ],
+   "amp_template": [
+    0.3196,
+    0.5578,
+    0.5197,
+    0.1837,
+    0.4861,
+    0.5809,
+    0.8181,
+    0.6235,
+    0.8844,
+    0.7514,
+    0.7803,
+    0.2437,
+    0.409,
+    0.211,
+    0.3066,
+    0.1801
+   ]
+  },
+  "3": {
+   "position": 3,
+   "n_instances": 2,
+   "dur_s": {
+    "median": 0.465,
+    "min": 0.463,
+    "max": 0.466,
+    "n": 2
+   },
+   "f_start_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_med_hz": {
+    "median": 317.615,
+    "min": 312.231,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_end_hz": {
+    "median": 306.848,
+    "min": 301.465,
+    "max": 312.231,
+    "n": 2
+   },
+   "f_peak_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_min_hz": {
+    "median": 301.465,
+    "min": 301.465,
+    "max": 301.465,
+    "n": 2
+   },
+   "harm2_ratio": {
+    "median": 0.025,
+    "min": 0.019,
+    "max": 0.032,
+    "n": 2
+   },
+   "harm3_ratio": {
+    "median": 0.004,
+    "min": 0.004,
+    "max": 0.004,
+    "n": 2
+   },
+   "peak_amp_rel": {
+    "median": 0.803,
+    "min": 0.765,
+    "max": 0.842,
+    "n": 2
+   },
+   "contour_template_hz": [
+    306.8,
+    317.6,
+    323.0,
+    323.0,
+    317.6,
+    323.0,
+    323.0,
+    317.6,
+    321.9,
+    312.2,
+    312.2,
+    312.2,
+    307.9,
+    315.1,
+    301.5,
+    301.5
+   ],
+   "amp_template": [
+    0.3138,
+    0.5874,
+    0.7725,
+    0.632,
+    0.6498,
+    0.7939,
+    0.6318,
+    0.4994,
+    0.5736,
+    0.4772,
+    0.5428,
+    0.4233,
+    0.2491,
+    0.2607,
+    0.1425,
+    0.1768
+   ]
+  },
+  "4": {
+   "position": 4,
+   "n_instances": 2,
+   "dur_s": {
+    "median": 0.397,
+    "min": 0.392,
+    "max": 0.402,
+    "n": 2
+   },
+   "f_start_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_med_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_end_hz": {
+    "median": 312.231,
+    "min": 312.231,
+    "max": 312.231,
+    "n": 2
+   },
+   "f_peak_hz": {
+    "median": 322.998,
+    "min": 322.998,
+    "max": 322.998,
+    "n": 2
+   },
+   "f_min_hz": {
+    "median": 312.231,
+    "min": 312.231,
+    "max": 312.231,
+    "n": 2
+   },
+   "harm2_ratio": {
+    "median": 0.019,
+    "min": 0.017,
+    "max": 0.02,
+    "n": 2
+   },
+   "harm3_ratio": {
+    "median": 0.004,
+    "min": 0.003,
+    "max": 0.005,
+    "n": 2
+   },
+   "peak_amp_rel": {
+    "median": 0.891,
+    "min": 0.813,
+    "max": 0.969,
+    "n": 2
+   },
+   "contour_template_hz": [
+    312.2,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    323.0,
+    312.2,
+    310.4,
+    317.6,
+    317.6,
+    312.2,
+    317.6,
+    306.8
+   ],
+   "amp_template": [
+    0.2844,
+    0.5376,
+    0.6348,
+    0.6409,
+    0.9703,
+    0.8902,
+    0.9336,
+    0.8299,
+    0.676,
+    0.4201,
+    0.3118,
+    0.3173,
+    0.2684,
+    0.2538,
+    0.1297,
+    0.1602
+   ]
+  }
+ }
+}

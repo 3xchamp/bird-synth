@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Great Blue Heron — a syrinx study</title>
+<style>
+  :root{
+    --paper:#f4f4f1; --paper2:#e9ebe6; --ink:#23272b; --ink-soft:#5f6a72;
+    --accent:#3d5a73; --accent-deep:#2c4256; --line:#ccd2cb; --card:#fdfdfa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    color:var(--ink);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:34px 22px 56px}
+  .kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent-deep);margin:0 0 8px}
+  h1{font-size:44px;font-weight:normal;margin:0 0 4px;line-height:1.05}
+  h1 .latin{font-style:italic;font-size:22px;color:var(--ink-soft)}
+  .sub{font-size:15.5px;line-height:1.55;color:var(--ink-soft);max-width:640px;margin:10px 0 0}
+  .sub b{color:var(--ink);font-weight:normal;border-bottom:1px solid var(--accent)}
+  hr.rule{border:none;border-top:1px solid var(--line);margin:26px 0}
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 14px;box-shadow:0 1px 0 #fff inset,0 10px 30px rgba(60,70,60,.07);
+  }
+  .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  button{
+    font-family:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--paper);padding:11px 26px;font-size:16px;letter-spacing:.04em;
+    transition:all .15s ease;
+  }
+  button:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent-deep)}
+  button:disabled{opacity:.45;cursor:default}
+  #singBtn{min-width:150px}
+  .morph{flex:1;min-width:260px}
+  .morph .labels{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .morph .labels .bird{color:var(--accent-deep)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:28px;cursor:pointer}
+  .morphVal{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:-2px;font-style:italic}
+  canvas#trace{width:100%;height:150px;display:block;margin-top:14px;background:#fbfbf7;border:1px solid var(--line);border-radius:6px}
+  .traceNote{font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  h2{font-size:13px;letter-spacing:.26em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);margin:30px 0 12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .card h3{margin:0;font-size:17px;font-weight:normal}
+  .card h3 .tag{font-size:10.5px;letter-spacing:.18em;color:var(--accent-deep);text-transform:uppercase;margin-left:8px}
+  .card .nums{font-size:13px;color:var(--ink-soft);line-height:1.5;font-variant-numeric:tabular-nums}
+  .card svg{display:block;width:100%;height:38px}
+  .card button{align-self:flex-start;padding:6px 18px;font-size:13.5px;background:transparent;color:var(--ink);border-color:var(--ink)}
+  .card button:hover{background:var(--ink);color:var(--paper)}
+  .foot{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-top:8px}
+  .foot b{color:var(--ink);font-weight:normal}
+  a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Bird-synth engine · Bank bird № 3</p>
+  <h1>Great Blue Heron <span class="latin">Ardea herodias</span></h1>
+  <p class="sub">A syrinx at its airiest — this bird barely has a pitch to track. What was
+  <b>measured</b> from one reference recording is the noise itself: <b>13 call bursts</b>, their
+  lengths, gaps, loudness arc, and the exact spectral shape of each burst type. The instrument
+  below is shaped breath — filtered noise wearing the measured spectra, with a low tonal core
+  only where the tracker could prove one exists. Where pitch could not be proven, the page
+  says so instead of inventing it.</p>
+
+  <hr class="rule">
+
+  <div class="stage">
+    <div class="row">
+      <button id="singBtn">▶&ensp;Sing</button>
+      <div class="morph">
+        <div class="labels"><span class="bird">Bird</span><span id="morphPct">0%</span><span>Electronic</span></div>
+        <input type="range" id="morph" min="0" max="1000" value="0">
+        <div class="morphVal" id="morphVal">measured bursts · free timing · breath and grit</div>
+      </div>
+    </div>
+    <canvas id="trace" width="1600" height="300"></canvas>
+    <div class="traceNote">The model’s own amplitude trace — each scheduled burst’s measured envelope, at its measured loudness. The top line is the overhead snarl (relative level 1.0).</div>
+  </div>
+
+  <h2>Measured burst types — hear each one alone</h2>
+  <div class="cards" id="cards"></div>
+
+  <hr class="rule">
+  <p class="foot"><b>Source.</b> Modeled from xeno-canto recording <b>XC698523</b> — Great Blue Heron,
+  recorded by <b>Thomas G. Graves</b>, Morro Bay, San Luis Obispo County, California, 2021-12-26 ·
+  CC BY-NC-SA 4.0. A parabolic-dish recording of a single bird flying overhead “snarling” as it
+  landed; a distant Marbled Godwit shares the file and is not modeled. Jimmy picked this recording
+  himself. No audio from the recording is played or reused; the synth re-creates measured burst
+  spectra and envelopes with filtered noise and oscillators.</p>
+  <p class="foot"><b>Method, briefly.</b> Bursts were segmented on the recording’s 200 Hz–8 kHz envelope
+  and measured frame by frame: duration, gaps, peak level, amplitude envelope, energy in six bands
+  (200 Hz–8 kHz) and spectral centroid. A pitch tracker was then allowed to speak only where its
+  track was stable and prominent — it proved a tonal peak near <b>0.9 kHz</b> in 8 of the 13 bursts
+  (5 of 6 croaks, 2 of 4 snarls, 1 of 3 chips); in the rest, the squawk is honestly pitchless and
+  the model adds no tone there beyond each type’s measured tonal share. The noise runs on
+  <b>one fixed path</b> — a single looped noise source through six fixed band filters into one
+  envelope gain — shaped only by scheduled envelopes, never reconnected per burst (the defect
+  that sank the first cardinal build is designed out), and a compressor guards the output.
+  The whole file was scanned for aircraft/vehicle rumble: a steady low-frequency bay ambience
+  is present, but no swell rises above it — the file is clean. The Bird⇄Electronic slider
+  continuously interpolates timing (toward a 112 BPM grid), the tonal core (toward an
+  A-major-pentatonic grid, growing saw + FM edge), and the noise bands (narrowing until the
+  squawk reads as pitched pulses). Full method and caveats: BUILD-heron.md.</p>
+</div>
+
+<script>
+'use strict';
+/* ==== LOGIC-BEGIN (pure data + generator; exercised headlessly by the audit) ==== */
+/* ============ MEASURED DATA — every value from great-blue-heron-measurements.json ============
+   XC698523 only. Band order: [200-450, 450-900, 900-1800, 1800-3200, 3200-5200, 5200-8000] Hz.
+   profile = median per-band energy shares (medians need not sum to 1; the page renormalizes
+   before use — a pure rescale). amp = 16-point median amplitude template, renormalized to
+   peak 1. f0 = median tonal-peak frequency over the instances where the tracker proved a
+   stable track (f0RelN of n); f0Share = the median share of burst power within ±6% of f0,
+   used to split burst power between the noise and the tonal core. */
+const MEAS = {
+  "types": {
+    "L": {"name":"Long snarl","n":4,"durMed":0.811,"durMin":0.709,"durMax":0.834,
+      "gridDur":0.8036,"peakMed":0.454,"centroid":1029.3,
+      "profile":[0.0447, 0.142, 0.7311, 0.0092, 0.0002, 0.0],
+      "amp":[0.5468, 0.518, 0.6743, 1.0, 0.8972, 0.9116, 0.905, 0.9188, 0.8432, 0.7091, 0.8534, 0.8774, 0.9743, 0.9947, 0.7433, 0.1728],
+      "f0":937.5,"f0Share":0.3289,"f0RelN":2,"harm2":0.037},
+    "M": {"name":"Croak","n":6,"durMed":0.37,"durMin":0.263,"durMax":0.465,
+      "gridDur":0.4018,"peakMed":0.33,"centroid":943.2,
+      "profile":[0.0182, 0.2264, 0.6252, 0.0264, 0.0, 0.0],
+      "amp":[0.5286, 0.478, 0.4648, 0.4257, 0.5958, 0.7283, 0.7529, 0.6828, 0.7811, 0.8768, 0.7362, 1.0, 0.5544, 0.8369, 0.3592, 0.167],
+      "f0":914.1,"f0Share":0.7056,"f0RelN":5,"harm2":0.016},
+    "K": {"name":"Chip","n":3,"durMed":0.077,"durMin":0.061,"durMax":0.108,
+      "gridDur":0.2679,"peakMed":0.164,"centroid":603.9,
+      "profile":[0.6975, 0.2025, 0.2212, 0.0263, 0.0001, 0.0],
+      "amp":[0.9247, 0.4273, 0.5057, 0.5791, 1.0, 0.5641, 0.7349, 0.5447, 0.6489, 0.4108, 0.6444, 0.5428, 0.4382, 0.4878, 0.4947, 0.2921],
+      "f0":867.2,"f0Share":0.4716,"f0RelN":1,"harm2":0.117}
+  },
+  "transitions": {
+    "K>K": {"min":1.194,"med":1.194,"max":1.194,"grid":1.2054},
+    "K>M": {"min":1.092,"med":1.092,"max":1.092,"grid":1.0714},
+    "L>L": {"min":1.109,"med":1.139,"max":1.17,"grid":1.2054},
+    "L>M": {"min":1.034,"med":1.065,"max":1.096,"grid":1.0714},
+    "M>K": {"min":1.173,"med":1.173,"max":1.173,"grid":1.2054},
+    "M>L": {"min":0.623,"med":0.643,"max":0.662,"grid":0.6696},
+    "M>M": {"min":0.576,"med":0.815,"max":0.82,"grid":0.8036}
+  },
+  "gapPool": {"min":0.233,"med":0.346,"max":1.134},
+  "arc": {
+    "approachK": 0.078, "approachM": 0.137,
+    "overhead1": [0.55, 0.612, 0.72], "overhead2": [0.92, 1.0, 1.0],
+    "calling": [0.224, 0.295, 0.41], "callingLShare": 0.2857,
+    "settle": [0.164, 0.192, 0.22],
+    "perfPause": [6, 8, 10], "gridPerfPause": 4.2857
+  },
+  "sequence": [
+    {"t":"K","peak":0.078,"dur":0.077,"period":1.092},
+    {"t":"M","peak":0.137,"dur":0.263,"period":0.662},
+    {"t":"L","peak":0.612,"dur":0.828,"period":1.109},
+    {"t":"L","peak":1.0,"dur":0.834,"period":1.17},
+    {"t":"L","peak":0.247,"dur":0.709,"period":1.034},
+    {"t":"M","peak":0.224,"dur":0.465,"period":0.82},
+    {"t":"M","peak":0.41,"dur":0.39,"period":0.623},
+    {"t":"L","peak":0.295,"dur":0.795,"period":1.096},
+    {"t":"M","peak":0.285,"dur":0.325,"period":0.576},
+    {"t":"M","peak":0.39,"dur":0.396,"period":0.815},
+    {"t":"M","peak":0.374,"dur":0.35,"period":1.173},
+    {"t":"K","peak":0.164,"dur":0.061,"period":1.194},
+    {"t":"K","peak":0.22,"dur":0.108,"period":null}
+  ]
+};
+const GRID = { bpm:112, beat:60/112 };           /* design choice for the electronic end */
+const PENTA = new Set([9,11,1,4,6]);             /* A-major pentatonic pitch classes (design choice) */
+let morph = 0;
+
+function quantize(f){
+  const midi = 69 + 12*Math.log2(f/440);
+  let best=null, bd=1e9;
+  for (let m=Math.floor(midi)-2; m<=Math.ceil(midi)+2; m++){
+    const pc = ((m%12)+12)%12;
+    if (!PENTA.has(pc)) continue;
+    const dd = Math.abs(m-midi); if (dd<bd){ bd=dd; best=m; }
+  }
+  return 440*Math.pow(2,(best-69)/12);
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+function morphFreq(f){
+  if (morph<=0) return f;
+  const q = quantize(f);
+  return Math.exp(lerp(Math.log(f), Math.log(q), morph));
+}
+function sampleIn(tri){ /* [min, med, max] -> draw biased to median */
+  const u=Math.random();
+  return u<0.5 ? lerp(tri[0],tri[1],u*2) : lerp(tri[1],tri[2],(u-0.5)*2);
+}
+function periodBird(a, b){
+  const tr = MEAS.transitions[a+'>'+b];
+  if (tr) return sampleIn([tr.min, tr.med, tr.max]);
+  /* pair never occurs in the single measured performance (only L>K can arise):
+     fall back to the pooled measured gaps after a's median duration */
+  return MEAS.types[a].durMed + sampleIn([MEAS.gapPool.min, MEAS.gapPool.med, MEAS.gapPool.max]);
+}
+function periodGrid(a, b){
+  const tr = MEAS.transitions[a+'>'+b];
+  if (tr) return tr.grid;
+  return MEAS.types[a].gridDur + 2*(GRID.beat/4);
+}
+
+/* One generated performance, replaying the measured arc:
+   approach (soft, optional) -> two overhead snarls at the arc peak ->
+   a calling run at mid level -> settle chips -> silence.
+   Counts, peaks and periods are drawn from the measured values in MEAS.arc /
+   MEAS.transitions; the file holds exactly one performance, so phase patterns
+   are point estimates from it (BUILD-heron.md says so). */
+function makePerformance(){
+  const evs = [];
+  let bo=0, go=0, prev=null;
+  function push(type, peak){
+    if (prev){
+      bo += periodBird(prev, type); go += periodGrid(prev, type);
+    }
+    evs.push({type, peak, birdOff:bo, gridOff:go});
+    prev = type;
+  }
+  const A = MEAS.arc, jit = ()=>0.85+Math.random()*0.3;
+  const r = Math.random();   /* approach: the measured pattern, a lone croak, or none */
+  if (r >= 0.55){ push('K', A.approachK*jit()); push('M', A.approachM*jit()); }
+  else if (r >= 0.25){ push('M', A.approachM*jit()); }
+  push('L', sampleIn(A.overhead1));            /* overhead: the arc peak */
+  push('L', sampleIn(A.overhead2));
+  const nCall = 5 + Math.floor(Math.random()*3);   /* measured: 7 */
+  for (let i=0;i<nCall;i++)
+    push(Math.random() < A.callingLShare ? 'L' : 'M', sampleIn(A.calling));
+  const nSettle = Math.random() < 0.6 ? 2 : 1;     /* measured: 2 */
+  for (let i=0;i<nSettle;i++) push('K', sampleIn(A.settle));
+  const last = evs[evs.length-1], LT = MEAS.types[last.type];
+  return {evs, durBird:last.birdOff+LT.durMed, durGrid:last.gridOff+LT.gridDur};
+}
+/* ==== LOGIC-END ==== */
+
+let actx=null, master, voiceBus, noiseGain, bandGains=[], bandFilters=[], analyser, noiseSrc;
+const PEAK_CAP = 0.8;    /* no burst's envelope ever exceeds 0.8; the compressor guards the rest */
+const BAND_CENTERS = [300, 636, 1273, 2400, 4080, 6448];  /* geometric means of the six measured bands */
+const BAND_Q = 1.3;
+const traceEvents=[];    /* {t0, dur, amp:[16], peak} — the model's own scheduled bursts */
+let noiseBusyUntil = 0;  /* end of the last envelope written to the single noiseGain */
+
+function initAudio(){
+  if (actx) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  master = actx.createGain(); master.gain.value = 0.9;
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value=-18; comp.ratio.value=6; comp.knee.value=18;
+  analyser = actx.createAnalyser(); analyser.fftSize = 2048;
+  master.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+
+  /* resonant chain — one fixed vocal-tract coloration (design choice): a broad
+     presence peak inside the measured 0.9–1.8 kHz energy mass + an 8 kHz ceiling */
+  voiceBus = actx.createGain();
+  const pk = actx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=1250; pk.Q.value=0.7; pk.gain.value=3.0;
+  const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=8000;
+  voiceBus.connect(pk); pk.connect(lp); lp.connect(master);
+
+  /* THE NOISE PATH — one fixed chain, connected exactly once, here:
+       noiseSrc -> 6 bandpass filters -> 6 band gains -> noiseGain -> voiceBus.
+     Nothing is ever connected or disconnected again. A burst is rendered ONLY by
+     automating parameters on these fixed nodes: the band gains (the measured
+     spectral profile), the filter Q (morph tightening) and noiseGain.gain (the
+     measured amplitude envelope on this single gain). The cardinal v1 defect —
+     a fresh parallel tap per note, stacking until the noise buried the bird —
+     has no counterpart here because there is nothing per-burst to stack. */
+  const len = 2*actx.sampleRate, buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0); for (let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  noiseSrc = actx.createBufferSource(); noiseSrc.buffer=buf; noiseSrc.loop=true;
+  noiseGain = actx.createGain(); noiseGain.gain.value=0;
+  noiseGain.connect(voiceBus);
+  BAND_CENTERS.forEach(c=>{
+    const flt = actx.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value=c; flt.Q.value=BAND_Q;
+    const g = actx.createGain(); g.gain.value=0;
+    noiseSrc.connect(flt); flt.connect(g); g.connect(noiseGain);
+    bandFilters.push(flt); bandGains.push(g);
+  });
+  noiseSrc.start();
+}
+
+/* ---- one heron burst: shaped breath + (where proven) a low tonal core ---- */
+function playBurst(typeKey, when, opts={}){
+  const T = MEAS.types[typeKey];
+  const durBird = opts.durBird || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur, morph);
+  const peak = (opts.peak!=null ? opts.peak : T.peakMed) * PEAK_CAP;
+  /* the single noiseGain carries one envelope at a time; bursts never overlap in
+     the measured data (every measured period exceeds the prior burst's duration),
+     and this guard keeps button-mashing from stacking curves on the one gain */
+  when = Math.max(when, noiseBusyUntil + 0.01);
+  noiseBusyUntil = when + dur;
+  traceEvents.push({t0:when, dur, amp:T.amp, peak});
+
+  /* power split between breath and tonal core: measured at the bird end
+     (f0Share of the burst's power sits within ±6% of the tonal peak); toward
+     the electronic end the core takes over (design choice: 0.75) */
+  const share = T.f0 ? lerp(T.f0Share, 0.75, morph) : 0;
+  const noiseAmp = Math.sqrt(1-share), oscAmp = Math.sqrt(share);
+
+  /* spectral shape on the FIXED filter bank: gains follow the type's measured
+     profile (renormalized, contrast raised with morph), Q narrows with morph */
+  const sum = T.profile.reduce((a,b)=>a+b,0);
+  const shaped = T.profile.map(p=>Math.pow(p/sum, 1+0.9*morph));
+  const mx = Math.max(...shaped);
+  bandGains.forEach((g,i)=> g.gain.setTargetAtTime(shaped[i]/mx, when, 0.012));
+  bandFilters.forEach(flt=> flt.Q.setTargetAtTime(lerp(BAND_Q, 3.4, morph), when, 0.05));
+
+  /* the burst envelope on the single noiseGain; endpoints forced to 0 so the
+     breath is fully closed between bursts, exactly as the fixed-path fix requires */
+  const nCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*noiseAmp);
+  noiseGain.gain.setValueCurveAtTime(new Float32Array(nCurve), when, dur);
+
+  /* tonal core — only for types where the tracker proved a stable peak (all
+     three types have at least one proven instance; the counts ride in the data).
+     A single steady tone: the measurement is a median track frequency, not a
+     contour, and the page does not invent one. */
+  if (T.f0){
+    const f = morphFreq(T.f0);
+    const f32 = new Float32Array(16).fill(f);
+    const g = actx.createGain();
+    g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*oscAmp)), when, dur);
+    g.connect(voiceBus);
+    const car = actx.createOscillator(); car.type='sine';
+    car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g);
+    const hGain = actx.createGain();
+    hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*oscAmp*T.harm2)), when, dur);
+    const harm = actx.createOscillator(); harm.type='sine';
+    harm.frequency.setValueCurveAtTime(new Float32Array(16).fill(f*2), when, dur);
+    harm.connect(hGain); hGain.connect(voiceBus);
+    car.start(when); car.stop(when+dur+0.05);
+    harm.start(when); harm.stop(when+dur+0.05);
+    if (morph > 0.02){
+      const sawLP = actx.createBiquadFilter(); sawLP.type='lowpass';
+      sawLP.frequency.value = lerp(4500, 12000, morph);
+      const sGain = actx.createGain();
+      sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*oscAmp*0.30*morph)), when, dur);
+      const saw = actx.createOscillator(); saw.type='sawtooth';
+      saw.frequency.setValueCurveAtTime(f32, when, dur);
+      saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(voiceBus);
+      const mod = actx.createOscillator(); mod.type='sine';
+      mod.frequency.setValueCurveAtTime(f32, when, dur);
+      const mGain = actx.createGain();
+      mGain.gain.setValueCurveAtTime(new Float32Array(16).fill(f*1.5*morph), when, dur);
+      mod.connect(mGain); mGain.connect(car.frequency);
+      saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+    }
+  }
+}
+
+/* ================= Sing: generated performances on the measured arc ================= */
+let singing=false, schedTimer=null, nextPerfAt=0, planIdx=0, perfPlan=null, cachedPlan=null, planStart=0, lastAt=0;
+function schedule(){
+  if (!singing) return;
+  const now = actx.currentTime;
+  if (!perfPlan && nextPerfAt < now + 1.0){
+    perfPlan = (morph>=0.5 && cachedPlan) ? cachedPlan : makePerformance();
+    if (morph>=0.5 && !cachedPlan) cachedPlan = perfPlan;
+    planStart = nextPerfAt; planIdx = 0; lastAt = 0;
+  }
+  if (!perfPlan) return;
+  const ahead = now + 0.18;
+  while (planIdx < perfPlan.evs.length){
+    const ev = perfPlan.evs[planIdx];
+    let at = planStart + lerp(ev.birdOff, ev.gridOff, morph);
+    if (at > ahead) break;
+    at = Math.max(at, now+0.01, lastAt+0.005);
+    playBurst(ev.type, at, {peak: ev.peak});
+    lastAt = at; planIdx++;
+  }
+  if (planIdx >= perfPlan.evs.length){
+    const dur = lerp(perfPlan.durBird, perfPlan.durGrid, morph);
+    const pause = lerp(sampleIn(MEAS.arc.perfPause), MEAS.arc.gridPerfPause, morph);
+    nextPerfAt = planStart + dur + pause;
+    perfPlan = null;
+  }
+}
+
+const singBtn = document.getElementById('singBtn');
+singBtn.addEventListener('click', ()=>{
+  initAudio(); if (actx.state==='suspended') actx.resume();
+  singing = !singing;
+  singBtn.innerHTML = singing ? '■&ensp;Stop' : '▶&ensp;Sing';
+  if (singing){
+    cachedPlan=null; perfPlan=null; planIdx=0;
+    nextPerfAt = actx.currentTime + 0.15;
+    schedTimer = setInterval(schedule, 30);
+    schedule();
+  } else {
+    clearInterval(schedTimer);
+  }
+});
+
+/* ================= burst cards ================= */
+const cardsEl = document.getElementById('cards');
+const BAND_LABELS = ['200–450','450–900','0.9–1.8k','1.8–3.2k','3.2–5.2k','5.2–8k'];
+const desc = {
+  REPLAY:'All 13 measured bursts in order, at their measured levels: the quiet approach, the two overhead snarls, the calling run, the settle chips. This is the performance the Sing generator improvises on.',
+  L:'The snarl itself — most of a second of broadband grit, loudest as the bird passes overhead. Nearly three-quarters of its energy sits in a single band, 0.9–1.8 kHz.',
+  M:'The working call — shorter croaks strung through the calling bout. Surprisingly tonal for a squawk: in the proven instances, ~71% of the croak’s power rides within a whisker of its 914 Hz peak.',
+  K:'Chips at the edges of the performance — a soft tick on approach, two more as the bird settles. The two low, thumpy chips defeat pitch-tracking entirely; only the last carries a proven tone.'
+};
+function chartSVG(T){
+  const sum = T.profile.reduce((a,b)=>a+b,0);
+  let bars='';
+  T.profile.forEach((p,i)=>{
+    const h = Math.max(1.5, (p/sum)*34), x = 4+i*17;
+    bars += `<rect x="${x}" y="${36-h}" width="12" height="${h}" fill="#3d5a73"/>`;
+  });
+  const pts = T.amp.map((a,i)=> (118+i*(98/15)).toFixed(1)+','+(36-a*30).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 220 38" preserveAspectRatio="none">${bars}<polyline points="${pts}" fill="none" stroke="#b3543f" stroke-width="1.6"/></svg>`;
+}
+function f0line(T){
+  if (!T.f0) return 'no stable pitch proven';
+  return `tonal peak ≈ ${Math.round(T.f0)} Hz — proven in ${T.f0RelN} of ${T.n}`;
+}
+function addCard(key, title, tag, nums, text, onplay){
+  const card = document.createElement('div'); card.className='card';
+  card.innerHTML = `<h3>${title}<span class="tag">${tag}</span></h3>${nums}
+    <div class="nums" style="font-style:italic">${text}</div>`;
+  const b=document.createElement('button'); b.textContent='▶ Play';
+  b.addEventListener('click', onplay);
+  card.appendChild(b);
+  cardsEl.appendChild(card);
+}
+addCard('REPLAY', 'The measured performance', '13 bursts',
+  `<div class="nums">approach → overhead peak → calling → settle · 19.1 s file, bursts span 3.6–15.0 s<br>peaks 0.08 – 1.0 (relative) · gaps 0.23 – 1.13 s</div>`,
+  desc.REPLAY, ()=>{
+    initAudio(); if (actx.state==='suspended') actx.resume();
+    let off = 0; const t0 = actx.currentTime+0.06;
+    MEAS.sequence.forEach((s, i)=>{
+      playBurst(s.t, t0+off, {peak: s.peak, durBird: s.dur});
+      if (s.period!=null){
+        const nxt = MEAS.sequence[i+1];
+        const grid = periodGrid(s.t, nxt.t);
+        off += lerp(s.period, grid, morph);
+      }
+    });
+  });
+for (const key of ['L','M','K']){
+  const T = MEAS.types[key];
+  addCard(key, T.name, key,
+    `${chartSVG(T)}
+     <div class="nums">${T.durMed.toFixed(2)} s (${T.durMin.toFixed(2)}–${T.durMax.toFixed(2)}) · centroid ≈ ${Math.round(T.centroid)} Hz · ${f0line(T)} · n = ${T.n} measured<br>spectrum bars: ${BAND_LABELS.join(' · ')} Hz; line: amplitude envelope</div>`,
+    desc[key], ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      playBurst(key, actx.currentTime+0.06, {});
+    });
+}
+
+/* ================= morph slider ================= */
+const morphEl = document.getElementById('morph');
+const morphVal = document.getElementById('morphVal');
+const morphPct = document.getElementById('morphPct');
+function morphText(m){
+  if (m<0.02) return 'measured bursts · free timing · breath and grit';
+  if (m<0.35) return 'tonal core leaning toward the scale · timing steadying · bands tightening';
+  if (m<0.65) return 'half bird, half machine · performances start to loop';
+  if (m<0.98) return 'scale-locked tonal core · near-grid timing · saw + FM edge';
+  return 'A-major pentatonic pulses · 112 BPM grid · the snarl, mechanized';
+}
+morphEl.addEventListener('input', ()=>{
+  morph = morphEl.value/1000;
+  morphPct.textContent = Math.round(morph*100)+'%';
+  morphVal.textContent = morphText(morph);
+  if (morph<0.5) cachedPlan=null;
+});
+
+/* ================= amplitude trace ================= */
+const cv = document.getElementById('trace'), cx2 = cv.getContext('2d');
+function drawTrace(){
+  requestAnimationFrame(drawTrace);
+  const W=cv.width, H=cv.height;
+  cx2.clearRect(0,0,W,H);
+  cx2.fillStyle='#fbfbf7'; cx2.fillRect(0,0,W,H);
+  const win=12, base=H-16, top=14;
+  const yOf = rel => base - rel*(base-top);
+  cx2.strokeStyle='#e2ddd2'; cx2.fillStyle='#9a8a76'; cx2.font='20px Georgia'; cx2.lineWidth=1;
+  for (const rel of [0.5, 1.0]){
+    cx2.beginPath(); cx2.moveTo(0,yOf(rel*PEAK_CAP)); cx2.lineTo(W,yOf(rel*PEAK_CAP)); cx2.stroke();
+    cx2.fillText('rel '+rel.toFixed(1), 10, yOf(rel*PEAK_CAP)-6);
+  }
+  if (!actx) return;
+  const now = actx.currentTime;
+  cx2.fillStyle='rgba(61,90,115,0.55)';
+  for (const ev of traceEvents){
+    cx2.beginPath();
+    let started=false;
+    for (let i=0;i<ev.amp.length;i++){
+      const tt = ev.t0 + ev.dur*i/(ev.amp.length-1);
+      const age = now-tt;
+      if (age<0 || age>win) continue;
+      const x = W - (age/win)*W, y = yOf(ev.amp[i]*ev.peak);
+      if (!started){ cx2.moveTo(x, yOf(0)); started=true; }
+      cx2.lineTo(x, y);
+    }
+    if (started){
+      const ageEnd = now-(ev.t0+ev.dur);
+      const xEnd = W - (Math.max(0,ageEnd)/win)*W;
+      cx2.lineTo(xEnd, yOf(0)); cx2.closePath(); cx2.fill();
+    }
+  }
+  while (traceEvents.length && now-traceEvents[0].t0 > win+2) traceEvents.shift();
+}
+drawTrace();
+</script>
+</body>
+</html>

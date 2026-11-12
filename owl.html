@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Great Horned Owl — a syrinx study</title>
+<style>
+  :root{
+    --paper:#f7f2e9; --paper2:#efe7d8; --ink:#2b2320; --ink-soft:#6d5f55;
+    --accent:#9c6b1e; --accent-deep:#6e4c12; --line:#d9cdb8; --card:#fffdf8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    color:var(--ink);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:34px 22px 56px}
+  .kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent-deep);margin:0 0 8px}
+  h1{font-size:44px;font-weight:normal;margin:0 0 4px;line-height:1.05}
+  h1 .latin{font-style:italic;font-size:22px;color:var(--ink-soft)}
+  .sub{font-size:15.5px;line-height:1.55;color:var(--ink-soft);max-width:640px;margin:10px 0 0}
+  .sub b{color:var(--ink);font-weight:normal;border-bottom:1px solid var(--accent)}
+  hr.rule{border:none;border-top:1px solid var(--line);margin:26px 0}
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 14px;box-shadow:0 1px 0 #fff inset,0 10px 30px rgba(80,60,30,.07);
+  }
+  .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  button{
+    font-family:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--paper);padding:11px 26px;font-size:16px;letter-spacing:.04em;
+    transition:all .15s ease;
+  }
+  button:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent-deep)}
+  button:disabled{opacity:.45;cursor:default}
+  #singBtn{min-width:150px}
+  .morph{flex:1;min-width:260px}
+  .morph .labels{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .morph .labels .bird{color:var(--accent-deep)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:28px;cursor:pointer}
+  .morphVal{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:-2px;font-style:italic}
+  canvas#trace{width:100%;height:150px;display:block;margin-top:14px;background:#fdfaf3;border:1px solid var(--line);border-radius:6px}
+  .traceNote{font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  h2{font-size:13px;letter-spacing:.26em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);margin:30px 0 12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .card h3{margin:0;font-size:17px;font-weight:normal}
+  .card h3 .tag{font-size:10.5px;letter-spacing:.18em;color:var(--accent-deep);text-transform:uppercase;margin-left:8px}
+  .card .nums{font-size:13px;color:var(--ink-soft);line-height:1.5;font-variant-numeric:tabular-nums}
+  .card svg{display:block;width:100%;height:38px}
+  .card button{align-self:flex-start;padding:6px 18px;font-size:13.5px;background:transparent;color:var(--ink);border-color:var(--ink)}
+  .card button:hover{background:var(--ink);color:var(--paper)}
+  .foot{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-top:8px}
+  .foot b{color:var(--ink);font-weight:normal}
+  a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Bird-synth engine · Bank bird 2</p>
+  <h1>Great Horned Owl <span class="latin">Bubo virginianus</span></h1>
+  <p class="sub">A syrinx, modeled — not sampled. Every pitch, hoot length and pause in this
+  instrument was <b>measured</b> from one reference recording: 8 hoots in 2 territorial series,
+  pitch-tracked frame by frame. The bird sings one note — a fundamental at <b>~323 Hz</b>, nearly
+  pure (2nd harmonic ≈ 2–3%, 3rd under 1.5%) — and all of its music is rhythm and weight:
+  a short knock, a long breath, the long hoot, the closer. Where the model simplifies,
+  the notes at the foot of the page say so.</p>
+
+  <hr class="rule">
+
+  <div class="stage">
+    <div class="row">
+      <button id="singBtn">▶&ensp;Sing</button>
+      <div class="morph">
+        <div class="labels"><span class="bird">Bird</span><span id="morphPct">0%</span><span>Electronic</span></div>
+        <input type="range" id="morph" min="0" max="1000" value="0">
+        <div class="morphVal" id="morphVal">measured contours · free timing · faint breath</div>
+      </div>
+    </div>
+    <canvas id="trace" width="1600" height="300"></canvas>
+    <div class="traceNote">The model’s own pitch trace (what the oscillators were told to sing), log scale. Gridlines at measured landmarks: 323 · 646 · 969 Hz — the fundamental and its two measured harmonics.</div>
+  </div>
+
+  <h2>The four hoots — hear each one alone</h2>
+  <div class="cards" id="cards"></div>
+
+  <hr class="rule">
+  <p class="foot"><b>Source.</b> Modeled from xeno-canto recording <b>XC11638</b> — Great Horned Owl,
+  recorded by <b>Nathan Pieplow</b>, Boulder, Colorado, 2007-03-16, before dawn ·
+  CC BY-NC-ND 2.5. Jimmy picked this recording himself; XC grades it A and lists no background
+  species. The license’s NoDerivs term is honored the same way as in the rest of the engine:
+  nothing from the recording is played, looped or redistributed — only measurements
+  (pitch tracks, durations, harmonic ratios) were taken from it, and the synth re-creates
+  those measurements with oscillators.</p>
+  <p class="foot"><b>Method, briefly.</b> Hoots were segmented on the recording’s 150–900 Hz band envelope
+  (thresholds set from this file’s measured in-band floor: median −30 dB between series, hoot peaks
+  near −2 dB) and pitch-tracked by STFT peak-picking at 10.8 Hz resolution. The recording holds
+  exactly two series of four hoots, near-identical — durations at each position agree within
+  5 ms — so every position template below is the median of just two performances, and the
+  27.5 s pause between series was observed exactly once. The whole file was also scanned for
+  aircraft/vehicle rumble: the only sustained swells in either the low band or the full band
+  are the two hoot series themselves — the scan verdict is <b>clean</b> (BUILD-owl.md has the
+  numbers). The hoots are rendered from one voice (they never overlap); a very faint breath of
+  filtered air rides under each hoot on a single fixed path whose gain is shaped per note and
+  returns to zero between notes — at 5% of the note’s own level, because these hoots are
+  almost pure tone. The Bird⇄Electronic slider continuously interpolates pitch (toward an
+  A-major-pentatonic grid), timing (toward 112 BPM), and timbre (sine → saw + FM) — it is one
+  instrument being pulled across a line, not two presets.</p>
+</div>
+
+<script>
+'use strict';
+/* ============ MEASURED DATA — every value from great-horned-owl-measurements.json ============
+   XC11638 only (Jimmy's pick). Types are the four positions in the territorial series.
+   Contours/amps: 16-point median templates (n = 2 per position). gridDur/grid periods/peaks
+   derived by the engine's rules documented in BUILD-owl.md. */
+const MEAS = {
+  "types": {
+    "P1": {"name":"Hoot 1 — the knock","n":2,"durMed":0.144,"durMin":0.142,"durMax":0.147,
+      "fStart":323.0,"fEnd":317.6,"gridDur":0.1339,"harm2":0.03,"harm3":0.014,"peak":0.245,"voice":1,
+      "contour":[312.2, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 316.5, 312.2],
+      "amp":[0.5312, 0.7874, 0.7998, 0.8827, 0.944, 0.7711, 0.4591, 0.1686, 0.1673, 0.2063, 0.3264, 0.3038, 0.1691, 0.275, 0.4172, 0.3012]},
+    "P2": {"name":"Hoot 2","n":2,"durMed":0.377,"durMin":0.375,"durMax":0.379,
+      "fStart":323.0,"fEnd":323.0,"gridDur":0.4018,"harm2":0.021,"harm3":0.004,"peak":0.406,"voice":1,
+      "contour":[312.2, 318.7, 323.0, 312.2, 319.1, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 320.8, 323.0, 323.0, 318.7, 312.2],
+      "amp":[0.3196, 0.5578, 0.5197, 0.1837, 0.4861, 0.5809, 0.8181, 0.6235, 0.8844, 0.7514, 0.7803, 0.2437, 0.409, 0.211, 0.3066, 0.1801]},
+    "P3": {"name":"Hoot 3 — the long one","n":2,"durMed":0.465,"durMin":0.463,"durMax":0.466,
+      "fStart":323.0,"fEnd":306.8,"gridDur":0.4018,"harm2":0.025,"harm3":0.004,"peak":0.415,"voice":1,
+      "contour":[306.8, 317.6, 323.0, 323.0, 317.6, 323.0, 323.0, 317.6, 321.9, 312.2, 312.2, 312.2, 307.9, 315.1, 301.5, 301.5],
+      "amp":[0.3138, 0.5874, 0.7725, 0.632, 0.6498, 0.7939, 0.6318, 0.4994, 0.5736, 0.4772, 0.5428, 0.4233, 0.2491, 0.2607, 0.1425, 0.1768]},
+    "P4": {"name":"Hoot 4 — the closer","n":2,"durMed":0.397,"durMin":0.392,"durMax":0.402,
+      "fStart":323.0,"fEnd":312.2,"gridDur":0.4018,"harm2":0.019,"harm3":0.004,"peak":0.46,"voice":1,
+      "contour":[312.2, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 312.2, 310.4, 317.6, 317.6, 312.2, 317.6, 306.8],
+      "amp":[0.2844, 0.5376, 0.6348, 0.6409, 0.9703, 0.8902, 0.9336, 0.8299, 0.676, 0.4201, 0.3118, 0.3173, 0.2684, 0.2538, 0.1297, 0.1602]}
+  },
+  "grammar": {
+    "transitions": {
+      "P1>P2": {"min":0.339,"med":0.34,"max":0.342,"grid":0.4018},
+      "P2>P3": {"min":1.052,"med":1.052,"max":1.052,"grid":1.0714},
+      "P3>P4": {"min":0.752,"med":0.752,"max":0.753,"grid":0.8036}
+    },
+    "seriesPause":[27.465,27.465,27.465], "gridSeriesPause":4.286
+  }
+};
+const GRID = { bpm:112, beat:60/112 };           /* design choice for the electronic end */
+const PENTA = new Set([9,11,1,4,6]);             /* A-major pentatonic pitch classes (design choice) */
+
+let actx=null, master, voiceBus, breathGain, analyser, noiseSrc;
+let morph=0;
+const BREATH_REL = 0.05;   /* breath peak cap: 5% of a note's peak gain (the engine invariant — see initAudio) */
+const traceEvents=[];   /* {t0, dur, curve:[Hz]} — the model's own scheduled pitch */
+
+function initAudio(){
+  if (actx) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  master = actx.createGain(); master.gain.value = 0.9;
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value=-18; comp.ratio.value=6; comp.knee.value=18;
+  analyser = actx.createAnalyser(); analyser.fftSize = 2048;
+  master.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+
+  /* resonant chain — the trachea/beak stage, retuned for this bird (design choice):
+     it sits around the measured 301–323 Hz fundamental and its harmonics, where the
+     cardinal's 2.5 kHz chain would have swallowed the hoot whole. */
+  voiceBus = actx.createGain();
+  const bp = actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=520; bp.Q.value=0.5;
+  const pk = actx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=700; pk.Q.value=1.0; pk.gain.value=2.5;
+  const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2600;
+  voiceBus.connect(bp); bp.connect(pk); pk.connect(lp); lp.connect(master);
+
+  /* breath: ONE fixed path — looped noise -> bandpass -> breathGain -> master.
+     Connected exactly once, here, and never reconnected. Per-note shaping happens
+     ONLY on breathGain.gain (see playNote). The cardinal v1 build connected a fresh
+     parallel tap per note; the taps stacked and the noise buried the bird — that
+     defect is designed out of the engine, here and everywhere. For this owl the
+     breath is barely there at all: the hoots measure as near-pure tone. */
+  const len = 2*actx.sampleRate, buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0); for (let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  noiseSrc = actx.createBufferSource(); noiseSrc.buffer=buf; noiseSrc.loop=true;
+  const nf = actx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=650; nf.Q.value=0.7;
+  breathGain = actx.createGain(); breathGain.gain.value=0;
+  noiseSrc.connect(nf); nf.connect(breathGain); breathGain.connect(master);
+  noiseSrc.start();
+}
+
+function quantize(f){
+  const midi = 69 + 12*Math.log2(f/440);
+  let best=null, bd=1e9;
+  for (let m=Math.floor(midi)-2; m<=Math.ceil(midi)+2; m++){
+    const pc = ((m%12)+12)%12;
+    if (!PENTA.has(pc)) continue;
+    const dd = Math.abs(m-midi); if (dd<bd){ bd=dd; best=m; }
+  }
+  return 440*Math.pow(2,(best-69)/12);
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+function morphFreq(f){
+  if (morph<=0) return f;
+  const q = quantize(f);
+  return Math.exp(lerp(Math.log(f), Math.log(q), morph));
+}
+function sampleIn(tri){ /* [min, med, max] -> draw biased to median */
+  const u=Math.random();
+  return u<0.5 ? lerp(tri[0],tri[1],u*2) : lerp(tri[1],tri[2],(u-0.5)*2);
+}
+
+/* ---- one syrinx hoot: fundamental + measured 2nd & 3rd harmonics + saw/FM edge by morph + breath ---- */
+function playNote(typeKey, when, opts={}){
+  const T = MEAS.types[typeKey];
+  const durBird = opts.dur || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur, morph);
+  const fScale = opts.freqScale || 1;
+  const peak = T.peak * (opts.gainScale || 1);
+  const curve = T.contour.map(f => morphFreq(f*fScale));
+  const f32 = new Float32Array(curve);
+  traceEvents.push({t0:when, dur, curve:[...curve]});
+
+  const pan = actx.createStereoPanner(); pan.pan.value = T.voice===0 ? -0.18 : 0.18;
+  pan.connect(voiceBus);
+
+  const g = actx.createGain();
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak)), when, dur);
+  g.connect(pan);
+
+  const car = actx.createOscillator(); car.type='sine';
+  car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g);
+
+  const hGain = actx.createGain();
+  hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm2)), when, dur);
+  const harm = actx.createOscillator(); harm.type='sine';
+  harm.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*2)), when, dur);
+  harm.connect(hGain); hGain.connect(pan);
+
+  const h3Gain = actx.createGain();
+  h3Gain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm3)), when, dur);
+  const harm3 = actx.createOscillator(); harm3.type='sine';
+  harm3.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*3)), when, dur);
+  harm3.connect(h3Gain); h3Gain.connect(pan);
+
+  if (morph > 0.02){
+    const sawLP = actx.createBiquadFilter(); sawLP.type='lowpass';
+    sawLP.frequency.value = lerp(4500, 12000, morph);
+    const sGain = actx.createGain();
+    sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*0.30*morph)), when, dur);
+    const saw = actx.createOscillator(); saw.type='sawtooth';
+    saw.frequency.setValueCurveAtTime(f32, when, dur);
+    saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(pan);
+    const mod = actx.createOscillator(); mod.type='sine';
+    mod.frequency.setValueCurveAtTime(f32, when, dur);
+    const mGain = actx.createGain();
+    mGain.gain.setValueCurveAtTime(new Float32Array(curve.map(f=>f*1.5*morph)), when, dur);
+    mod.connect(mGain); mGain.connect(car.frequency);
+    saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+  }
+  /* breath under the hoot: an envelope on the SINGLE breathGain (fixed path, see
+     initAudio). Endpoints are forced to 0, so the breath is fully closed between
+     hoots and through the long pause; the peak is capped at BREATH_REL x the hoot's
+     own peak gain. No nodes are created, connected or disconnected here. */
+  const bCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*BREATH_REL*(1-0.6*morph));
+  breathGain.gain.setValueCurveAtTime(new Float32Array(bCurve), when, dur);
+
+  car.start(when); car.stop(when+dur+0.05);
+  harm.start(when); harm.stop(when+dur+0.05);
+  harm3.start(when); harm3.stop(when+dur+0.05);
+}
+
+/* ================= Sing: the measured series grammar ================= */
+let singing=false, schedTimer=null, nextSeriesAt=0, planIdx=0, seriesPlan=null, cachedPlan=null;
+
+/* Series grammar, measured on XC11638: exactly one form — the four-hoot
+   territorial strophe P1 P2 P3 P4. Both recorded series take it, hoot for hoot.
+   Onset-to-onset periods are drawn per transition from the measured
+   [min, med, max]; the grid side uses the 16th-note grid periods in
+   MEAS.grammar. The pause between series was observed once: 27.465 s.
+   At the bird end the page keeps that patience — an owl is in no hurry. */
+function makeSeriesPlan(){
+  const evs = [];   /* {type, birdOff, gridOff, durBird, durGrid} */
+  const seq = ['P1','P2','P3','P4'];
+  let bo=0, go=0;
+  seq.forEach((type, i)=>{
+    evs.push({type, birdOff:bo, gridOff:go,
+      durBird:MEAS.types[type].durMed, durGrid:MEAS.types[type].gridDur});
+    if (i < seq.length-1){
+      const tr = MEAS.grammar.transitions[type+'>'+seq[i+1]];
+      bo += sampleIn([tr.min, tr.med, tr.max]); go += tr.grid;
+    }
+  });
+  const lastEv = evs[evs.length-1];
+  return {evs, durBird:lastEv.birdOff+lastEv.durBird, durGrid:lastEv.gridOff+lastEv.durGrid};
+}
+
+let planStart = 0, lastAt = 0;
+function schedule(){
+  if (!singing) return;
+  const now = actx.currentTime;
+  if (!seriesPlan && nextSeriesAt < now + 1.0){
+    seriesPlan = (morph>=0.5 && cachedPlan) ? cachedPlan : makeSeriesPlan();
+    if (morph>=0.5 && !cachedPlan) cachedPlan = seriesPlan;
+    planStart = nextSeriesAt; planIdx = 0; lastAt = 0;
+  }
+  if (!seriesPlan) return;
+  const ahead = now + 0.18;
+  while (planIdx < seriesPlan.evs.length){
+    const ev = seriesPlan.evs[planIdx];
+    let at = planStart + lerp(ev.birdOff, ev.gridOff, morph);
+    if (at > ahead) break;
+    at = Math.max(at, now+0.01, lastAt+0.005);
+    playNote(ev.type, at, ev);
+    lastAt = at; planIdx++;
+  }
+  if (planIdx >= seriesPlan.evs.length){
+    const seriesDur = lerp(seriesPlan.durBird, seriesPlan.durGrid, morph);
+    const pause = lerp(sampleIn(MEAS.grammar.seriesPause), MEAS.grammar.gridSeriesPause, morph);
+    nextSeriesAt = planStart + seriesDur + pause;
+    seriesPlan = null;
+  }
+}
+
+const singBtn = document.getElementById('singBtn');
+singBtn.addEventListener('click', ()=>{
+  initAudio(); if (actx.state==='suspended') actx.resume();
+  singing = !singing;
+  singBtn.innerHTML = singing ? '■&ensp;Stop' : '▶&ensp;Sing';
+  if (singing){
+    cachedPlan=null; seriesPlan=null; planIdx=0;
+    nextSeriesAt = actx.currentTime + 0.15;
+    schedTimer = setInterval(schedule, 30);
+    schedule();
+  } else {
+    clearInterval(schedTimer);
+  }
+});
+
+/* ================= hoot cards ================= */
+const cardsEl = document.getElementById('cards');
+const order = ['SERIES','P1','P2','P3','P4'];
+const desc = {
+  SERIES:'The whole strophe, as both recorded performances sing it: knock, hoot, a long breath, the long hoot, the closer.',
+  P1:'The knock — a short, soft opener at barely half the weight of what follows. It says: someone is here.',
+  P2:'The first full hoot — the same 323 Hz, nearly three times the knock’s length, most of the series’ weight already in it.',
+  P3:'The long hoot — the longest of the four, and the only one that sags: it starts at 323 Hz and settles down toward ~302 Hz.',
+  P4:'The closer — the loudest hoot of the series, arriving a short step (0.75 s) after the long one, like a full stop.'
+};
+function sparkSVG(contour){
+  const w=220,h=38, lo=270, hi=380;
+  const pts = contour.map((f,i)=>{
+    const x=(i/(contour.length-1))*w;
+    const y=h-4-((Math.log(f)-Math.log(lo))/(Math.log(hi)-Math.log(lo)))*(h-8);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#9c6b1e" stroke-width="1.6"/></svg>`;
+}
+for (const key of order){
+  const card = document.createElement('div'); card.className='card';
+  if (key==='SERIES'){
+    card.innerHTML = `<h3>The series<span class="tag">the strophe</span></h3>
+      ${sparkSVG(MEAS.types.P1.contour.concat(MEAS.types.P2.contour, MEAS.types.P3.contour, MEAS.types.P4.contour))}
+      <div class="nums">4 hoots · periods 0.34 / 1.05 / 0.75 s · span 2.55 s<br>pause to the next series: 27.5 s (observed once)<br>both recorded series take exactly this form</div>
+      <div class="nums" style="font-style:italic">${desc.SERIES}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play series';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      const seq = ['P1','P2','P3','P4'];
+      let off = 0; const t0 = actx.currentTime+0.06;
+      seq.forEach((type, i)=>{
+        playNote(type, t0+off, {});
+        if (i < seq.length-1){
+          const tr = MEAS.grammar.transitions[type+'>'+seq[i+1]];
+          off += lerp(tr.med, tr.grid, morph);
+        }
+      });
+    });
+    card.appendChild(b);
+  } else {
+    const T = MEAS.types[key];
+    card.innerHTML = `<h3>${T.name}<span class="tag">${key}</span></h3>
+      ${sparkSVG(T.contour)}
+      <div class="nums">${Math.round(T.fStart)} → ${Math.round(T.fEnd)} Hz · ${T.durMed.toFixed(2)} s
+      (${T.durMin.toFixed(2)}–${T.durMax.toFixed(2)}) · 2nd harm. ${(T.harm2*100).toFixed(1)}% · n = ${T.n} measured</div>
+      <div class="nums" style="font-style:italic">${desc[key]}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      playNote(key, actx.currentTime+0.06, {});
+    });
+    card.appendChild(b);
+  }
+  cardsEl.appendChild(card);
+}
+
+/* ================= morph slider ================= */
+const morphEl = document.getElementById('morph');
+const morphVal = document.getElementById('morphVal');
+const morphPct = document.getElementById('morphPct');
+function morphText(m){
+  if (m<0.02) return 'measured contours · free timing · faint breath';
+  if (m<0.35) return 'pitch leaning toward the scale · timing steadying · a little edge';
+  if (m<0.65) return 'half bird, half machine · the series starts to loop';
+  if (m<0.98) return 'scale-locked pitch · near-grid timing · saw + FM sheen';
+  return 'A-major pentatonic · 112 BPM grid · full electronic timbre, still the owl’s rhythm';
+}
+morphEl.addEventListener('input', ()=>{
+  morph = morphEl.value/1000;
+  morphPct.textContent = Math.round(morph*100)+'%';
+  morphVal.textContent = morphText(m);
+  if (morph<0.5) cachedPlan=null;
+});
+
+/* ================= pitch trace ================= */
+const cv = document.getElementById('trace'), cx = cv.getContext('2d');
+const LANDMARKS = [323, 646, 969];   /* measured: fundamental · 2nd harmonic · 3rd harmonic */
+function drawTrace(){
+  requestAnimationFrame(drawTrace);
+  const W=cv.width, H=cv.height;
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle='#fdfaf3'; cx.fillRect(0,0,W,H);
+  const fLo=180, fHi=1200, win=9;
+  const yOf = f => H-14 - ((Math.log(f)-Math.log(fLo))/(Math.log(fHi)-Math.log(fLo)))*(H-28);
+  cx.strokeStyle='#e4d9c4'; cx.fillStyle='#9a8a76'; cx.font='20px Georgia'; cx.lineWidth=1;
+  for (const f of LANDMARKS){
+    cx.beginPath(); cx.moveTo(0,yOf(f)); cx.lineTo(W,yOf(f)); cx.stroke();
+    cx.fillText(f+' Hz', 10, yOf(f)-6);
+  }
+  if (!actx) return;
+  const now = actx.currentTime;
+  cx.strokeStyle='#9c6b1e'; cx.lineWidth=2.4; cx.beginPath();
+  let pen=false;
+  for (const ev of traceEvents){
+    for (let i=0;i<ev.curve.length;i++){
+      const tt = ev.t0 + ev.dur*i/(ev.curve.length-1);
+      const age = now-tt;
+      if (age<0 || age>win){ if (age>win) pen=false; continue; }
+      const x = W - (age/win)*W, y = yOf(ev.curve[i]);
+      if (!pen){ cx.moveTo(x,y); pen=true; } else cx.lineTo(x,y);
+    }
+    pen=false;
+  }
+  cx.stroke();
+  while (traceEvents.length && now-traceEvents[0].t0 > win+2) traceEvents.shift();
+}
+drawTrace();
+</script>
+</body>
+</html>

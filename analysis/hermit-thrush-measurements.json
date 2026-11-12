@@ -1,0 +1,1539 @@
+{
+ "species": "Hermit Thrush (Catharus guttatus)",
+ "primary_reference": {
+  "file": "XC1048898.mp3",
+  "xeno_canto_id": "XC1048898",
+  "recordist": "AUDEVARD Aur\u00e9lien",
+  "location": "Homer, Kenai Peninsula, Alaska, US",
+  "date": "2022-06-20",
+  "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0",
+  "xc_grade": "A",
+  "background_species": "none (per recording page)",
+  "sample_rate_hz": 48000,
+  "duration_s": 41.89,
+  "decoded_wav": "XC1048898.wav (48 kHz mono decode of the MP3, same folder)"
+ },
+ "method": "STFT (1024-pt Hann, 128 hop) dominant-peak pitch track in 1.3-9.5 kHz; note segmentation on the 1.5-9 kHz band Hilbert envelope (3 ms smoothing): body pass onset -26 dB / offset -33 dB rel. file peak (min off-time 15 ms, min note 30 ms), plus a sensitive pass (onset -38 / offset -45 dB, min off 20 ms, min note 40 ms) whose additions were kept only with median pitch prominence >= 8 dB. Note f_start/f_end = median track over first/last 20%; f_med = whole-note median; f_peak/f_min = 95th/5th percentile. harm2/harm3 = median ratio of STFT magnitude at 2x/3x the tracked peak to the peak itself; subharm = same at f/2. peak_amp_rel = max of the band envelope (linear, signal peak-normalized) within the note. Templates = per-note tracks resampled to 16 normalized points, median across instances. Songs = note groups split at gaps > 1.2 s. Song base frequency = median f_med of the song's sustained notes (dur >= 0.25 s). Type rules (this bird, by duration/contour): W = song-initial note, dur >= 0.15 s, |f_end-f_start|/f_start < 3% (flat lead whistle); sustained notes (dur >= 0.15 s): rise >= 10% -> U, fall >= 15% -> D, else S; short notes (dur < 0.15 s): dur < 0.07 s -> C, rise >= 8% -> u, fall >= 8% -> d, else C. The one sensitive-pass fragment at 0.16 s (unreliable contour, amp 0.014) is typed x and NOT templated. Tremolo: per sustained note, FFT of the 1.5-9 kHz band envelope (1 ms smoothing) \u2014 peak rate in 8-60 Hz and a percentile depth index. Contamination scan: short-time RMS in 0.25 s windows for the 60-500 Hz band and full band; a swell = 1 s-smoothed level > file median + 7 dB sustained >= 1.5 s (spans < 2 s apart merged). Gap contrast: 0.25 s full-band RMS windows, p10 (gap floor) vs p90 (phrase). Grid values (durations, transition periods, song pause) are design choices for the electronic end of the morph: nearest 32nd-note multiple at 112 BPM (0.067 s) with floors of 1 step (durations) / 2 steps (periods); song pause to the nearest beat.",
+ "vetting": {
+  "gap_floor_db_rms": -46.3,
+  "phrase_level_db_rms": -21.5,
+  "contrast_db": 24.8,
+  "note": "SOURCES.md vetting (Mordecai, eye + 0.25 s windows on the MP3) measured gaps at -51.6 dB RMS vs phrase peaks -16.4 dB; this pipeline's p10/p90 percentiles over the decoded WAV are the values above (different statistic, same conclusion: ~25-35 dB phrase-to-floor separation on a near-silent floor)."
+ },
+ "contamination_scan": {
+  "low_freq_band_hz": [
+   60,
+   500
+  ],
+  "lf_baseline_db": -48.0,
+  "lf_swell_spans_s": [],
+  "broadband_baseline_db": -43.6,
+  "broadband_swell_spans_s": [
+   [
+    0.75,
+    2.25,
+    18.4
+   ],
+   [
+    4.75,
+    7.0,
+    21.9
+   ],
+   [
+    26.25,
+    29.0,
+    29.1
+   ],
+   [
+    34.25,
+    35.75,
+    27.7
+   ],
+   [
+    38.75,
+    40.5,
+    30.6
+   ]
+  ],
+  "verdict": "none found \u2014 no low-frequency (60-500 Hz) swell anywhere in the 41.9 s file (baseline -48.0 dB, zero spans above threshold), so no aircraft/vehicle rumble span exists to exclude. The five broadband swells coincide with song clusters (0.75-2.25, 4.75-7.0, 26.25-29.0, 34.25-35.75, 38.75-40.5 s) while the 60-500 Hz band stays at baseline through them \u2014 the bird's own song energy (the three quieter songs at 11, 17 and 23.8 s do not cross the +7 dB broadband threshold). No span excluded, no note contaminated. Faint low-frequency wisps visible in a 0.25 s profile at ~21.5, 29.6, 31.3, 32.3, 36.5, 37.5 s are spectrally dominated by 0.8-1.4 kHz content (mic/wind floor wobble), never cross the swell threshold, and produced no pitch-prominent segments.",
+  "notes_in_lf_spans": 0
+ },
+ "body_note_count": 30,
+ "templated_note_count": 29,
+ "song_count": 8,
+ "song_count_note": "SOURCES.md's spectrogram count was nine phrase clusters; the stated segmentation resolves eight song groups (gap rule > 1.2 s). The difference is song 0: its quiet intro complex (~0.3-1.05 s, 15-20 dB below the phrase, fragmented at measurement thresholds) reads as a separate cluster on a spectrogram but belongs to song 0 by the gap rule, and the 23.8 s / 26.1 s songs are separated by a real 1.39 s pause. The generator uses the eight measured forms.",
+ "faint_material": [
+  {
+   "t0": 0.16,
+   "t1": 0.29,
+   "note": "sensitive-pass fragment opening song 0; contour unreliable (track jumps 1.4-6.2 kHz), amp 0.014. Part of a quiet intro complex (~0.3-1.05 s) that sits 15-20 dB below the phrase and fragments at segmentation thresholds. Recorded as an observation; NOT templated, NOT in any form."
+  },
+  {
+   "t_approx": 25.4,
+   "note": "faint wisp ~25.3-25.9 s (~3 kHz, ~10 dB above floor in 50 ms maxima) before song 5; produced no pitch-prominent segment. Not templated."
+  }
+ ],
+ "songs": [
+  {
+   "index": 0,
+   "t_start": 0.161,
+   "t_end": 2.298,
+   "n_notes": 8,
+   "type_sequence": "x C C S u d u d",
+   "base_freq_hz": 3234.4,
+   "intro_freq_hz": null,
+   "longest_note_freq_hz": 3234.4,
+   "freq_span_hz": [
+    1312.5,
+    7218.8
+   ],
+   "form": [
+    {
+     "type": "C",
+     "f_med_hz": 7031.2
+    },
+    {
+     "type": "C",
+     "f_med_hz": 5015.6
+    },
+    {
+     "type": "S",
+     "f_med_hz": 3234.4
+    },
+    {
+     "type": "u",
+     "f_med_hz": 3796.9
+    },
+    {
+     "type": "d",
+     "f_med_hz": 3281.2
+    },
+    {
+     "type": "u",
+     "f_med_hz": 3703.1
+    },
+    {
+     "type": "d",
+     "f_med_hz": 3234.4
+    }
+   ],
+   "pause_after_s": 2.351
+  },
+  {
+   "index": 1,
+   "t_start": 4.649,
+   "t_end": 6.767,
+   "n_notes": 6,
+   "type_sequence": "C u D C U S",
+   "base_freq_hz": 2765.6,
+   "intro_freq_hz": null,
+   "longest_note_freq_hz": 2437.5,
+   "freq_span_hz": [
+    1875.0,
+    6140.6
+   ],
+   "form": [
+    {
+     "type": "C",
+     "f_med_hz": 5906.2
+    },
+    {
+     "type": "u",
+     "f_med_hz": 5203.1
+    },
+    {
+     "type": "D",
+     "f_med_hz": 4898.4
+    },
+    {
+     "type": "C",
+     "f_med_hz": 5156.2
+    },
+    {
+     "type": "U",
+     "f_med_hz": 2437.5
+    },
+    {
+     "type": "S",
+     "f_med_hz": 2765.6
+    }
+   ],
+   "pause_after_s": 4.271
+  },
+  {
+   "index": 2,
+   "t_start": 11.038,
+   "t_end": 11.876,
+   "n_notes": 2,
+   "type_sequence": "W U",
+   "base_freq_hz": 3796.9,
+   "intro_freq_hz": 4125.0,
+   "longest_note_freq_hz": 4125.0,
+   "freq_span_hz": [
+    3000.0,
+    4921.9
+   ],
+   "form": [
+    {
+     "type": "W",
+     "f_med_hz": 4125.0
+    },
+    {
+     "type": "U",
+     "f_med_hz": 3468.8
+    }
+   ],
+   "pause_after_s": 5.447
+  },
+  {
+   "index": 3,
+   "t_start": 17.323,
+   "t_end": 17.782,
+   "n_notes": 1,
+   "type_sequence": "D",
+   "base_freq_hz": 4171.9,
+   "intro_freq_hz": null,
+   "longest_note_freq_hz": 4171.9,
+   "freq_span_hz": [
+    3656.2,
+    6468.8
+   ],
+   "form": [
+    {
+     "type": "D",
+     "f_med_hz": 4171.9
+    }
+   ],
+   "pause_after_s": 5.979
+  },
+  {
+   "index": 4,
+   "t_start": 23.761,
+   "t_end": 24.709,
+   "n_notes": 3,
+   "type_sequence": "U S D",
+   "base_freq_hz": 3750.0,
+   "intro_freq_hz": null,
+   "longest_note_freq_hz": 2906.2,
+   "freq_span_hz": [
+    2203.1,
+    4546.9
+   ],
+   "form": [
+    {
+     "type": "U",
+     "f_med_hz": 3843.8
+    },
+    {
+     "type": "S",
+     "f_med_hz": 3750.0
+    },
+    {
+     "type": "D",
+     "f_med_hz": 2906.2
+    }
+   ],
+   "pause_after_s": 1.391
+  },
+  {
+   "index": 5,
+   "t_start": 26.1,
+   "t_end": 28.596,
+   "n_notes": 5,
+   "type_sequence": "C S S S D",
+   "base_freq_hz": 3539.1,
+   "intro_freq_hz": null,
+   "longest_note_freq_hz": 3140.6,
+   "freq_span_hz": [
+    1781.2,
+    6843.8
+   ],
+   "form": [
+    {
+     "type": "C",
+     "f_med_hz": 6468.8
+    },
+    {
+     "type": "S",
+     "f_med_hz": 4828.1
+    },
+    {
+     "type": "S",
+     "f_med_hz": 3937.5
+    },
+    {
+     "type": "S",
+     "f_med_hz": 2718.8
+    },
+    {
+     "type": "D",
+     "f_med_hz": 3140.6
+    }
+   ],
+   "pause_after_s": 5.714
+  },
+  {
+   "index": 6,
+   "t_start": 34.31,
+   "t_end": 35.413,
+   "n_notes": 3,
+   "type_sequence": "W U S",
+   "base_freq_hz": 3726.6,
+   "intro_freq_hz": 4875.0,
+   "longest_note_freq_hz": 4031.2,
+   "freq_span_hz": [
+    2953.1,
+    4875.0
+   ],
+   "form": [
+    {
+     "type": "W",
+     "f_med_hz": 4875.0
+    },
+    {
+     "type": "U",
+     "f_med_hz": 4031.2
+    },
+    {
+     "type": "S",
+     "f_med_hz": 3421.9
+    }
+   ],
+   "pause_after_s": 3.556
+  },
+  {
+   "index": 7,
+   "t_start": 38.969,
+   "t_end": 40.259,
+   "n_notes": 2,
+   "type_sequence": "W D",
+   "base_freq_hz": 3867.2,
+   "intro_freq_hz": 4359.4,
+   "longest_note_freq_hz": 3375.0,
+   "freq_span_hz": [
+    2231.2,
+    4359.4
+   ],
+   "form": [
+    {
+     "type": "W",
+     "f_med_hz": 4359.4
+    },
+    {
+     "type": "D",
+     "f_med_hz": 3375.0
+    }
+   ],
+   "pause_after_s": null
+  }
+ ],
+ "pitch_ladder": {
+  "definition": "Per-song base frequency (median f_med of sustained notes), in performance order, with ratio/semitone distance to the median base. Each song sits at its own pitch level; successive levels are unrelated by any staircase rule in this performance (ratios range widely). The page generator replays the measured song forms with each note transposed by its own measured f_med / type-template-base ratio, so the ladder is reproduced exactly.",
+  "median_base_freq_hz": 3738.3,
+  "levels": [
+   {
+    "song": 0,
+    "base_freq_hz": 3234.4,
+    "ratio_to_median": 0.8652,
+    "semitones_from_median": -2.51
+   },
+   {
+    "song": 1,
+    "base_freq_hz": 2765.6,
+    "ratio_to_median": 0.7398,
+    "semitones_from_median": -5.22
+   },
+   {
+    "song": 2,
+    "base_freq_hz": 3796.9,
+    "ratio_to_median": 1.0157,
+    "semitones_from_median": 0.27
+   },
+   {
+    "song": 3,
+    "base_freq_hz": 4171.9,
+    "ratio_to_median": 1.116,
+    "semitones_from_median": 1.9
+   },
+   {
+    "song": 4,
+    "base_freq_hz": 3750.0,
+    "ratio_to_median": 1.0031,
+    "semitones_from_median": 0.05
+   },
+   {
+    "song": 5,
+    "base_freq_hz": 3539.1,
+    "ratio_to_median": 0.9467,
+    "semitones_from_median": -0.95
+   },
+   {
+    "song": 6,
+    "base_freq_hz": 3726.6,
+    "ratio_to_median": 0.9969,
+    "semitones_from_median": -0.05
+   },
+   {
+    "song": 7,
+    "base_freq_hz": 3867.2,
+    "ratio_to_median": 1.0345,
+    "semitones_from_median": 0.59
+   }
+  ]
+ },
+ "transitions": {
+  "C>C": {
+   "period_s": {
+    "median": 0.209,
+    "min": 0.209,
+    "max": 0.209,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.135,
+    "min": 0.135,
+    "max": 0.135,
+    "n": 1
+   },
+   "grid_period_s": 0.201
+  },
+  "C>S": {
+   "period_s": {
+    "median": 0.377,
+    "min": 0.153,
+    "max": 0.601,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.338,
+    "min": 0.113,
+    "max": 0.564,
+    "n": 2
+   },
+   "grid_period_s": 0.402
+  },
+  "C>U": {
+   "period_s": {
+    "median": 0.35,
+    "min": 0.35,
+    "max": 0.35,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.291,
+    "min": 0.291,
+    "max": 0.291,
+    "n": 1
+   },
+   "grid_period_s": 0.335
+  },
+  "C>u": {
+   "period_s": {
+    "median": 0.152,
+    "min": 0.152,
+    "max": 0.152,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.106,
+    "min": 0.106,
+    "max": 0.106,
+    "n": 1
+   },
+   "grid_period_s": 0.134
+  },
+  "D>C": {
+   "period_s": {
+    "median": 0.444,
+    "min": 0.444,
+    "max": 0.444,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.119,
+    "min": 0.119,
+    "max": 0.119,
+    "n": 1
+   },
+   "grid_period_s": 0.469
+  },
+  "S>D": {
+   "period_s": {
+    "median": 0.371,
+    "min": 0.342,
+    "max": 0.4,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.038,
+    "min": 0.038,
+    "max": 0.039,
+    "n": 2
+   },
+   "grid_period_s": 0.402
+  },
+  "S>S": {
+   "period_s": {
+    "median": 0.677,
+    "min": 0.421,
+    "max": 0.932,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.261,
+    "min": 0.032,
+    "max": 0.491,
+    "n": 2
+   },
+   "grid_period_s": 0.67
+  },
+  "S>u": {
+   "period_s": {
+    "median": 0.567,
+    "min": 0.567,
+    "max": 0.567,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.048,
+    "min": 0.048,
+    "max": 0.048,
+    "n": 1
+   },
+   "grid_period_s": 0.536
+  },
+  "U>S": {
+   "period_s": {
+    "median": 0.552,
+    "min": 0.3,
+    "max": 0.668,
+    "n": 3
+   },
+   "gap_s": {
+    "median": 0.037,
+    "min": 0.03,
+    "max": 0.076,
+    "n": 3
+   },
+   "grid_period_s": 0.536
+  },
+  "W>D": {
+   "period_s": {
+    "median": 0.312,
+    "min": 0.312,
+    "max": 0.312,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.033,
+    "min": 0.033,
+    "max": 0.033,
+    "n": 1
+   },
+   "grid_period_s": 0.335
+  },
+  "W>U": {
+   "period_s": {
+    "median": 0.364,
+    "min": 0.221,
+    "max": 0.507,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.046,
+    "min": 0.04,
+    "max": 0.053,
+    "n": 2
+   },
+   "grid_period_s": 0.335
+  },
+  "d>u": {
+   "period_s": {
+    "median": 0.154,
+    "min": 0.154,
+    "max": 0.154,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.058,
+    "min": 0.058,
+    "max": 0.058,
+    "n": 1
+   },
+   "grid_period_s": 0.134
+  },
+  "u>D": {
+   "period_s": {
+    "median": 0.145,
+    "min": 0.145,
+    "max": 0.145,
+    "n": 1
+   },
+   "gap_s": {
+    "median": 0.05,
+    "min": 0.05,
+    "max": 0.05,
+    "n": 1
+   },
+   "grid_period_s": 0.134
+  },
+  "u>d": {
+   "period_s": {
+    "median": 0.158,
+    "min": 0.156,
+    "max": 0.16,
+    "n": 2
+   },
+   "gap_s": {
+    "median": 0.039,
+    "min": 0.028,
+    "max": 0.05,
+    "n": 2
+   },
+   "grid_period_s": 0.134
+  }
+ },
+ "song_pause_s": {
+  "median": 4.271,
+  "min": 1.391,
+  "max": 5.979,
+  "n": 7
+ },
+ "grid_song_pause_s": 4.286,
+ "phrase_types": {
+  "W": {
+   "name": "Lead whistle",
+   "n_instances": 3,
+   "dur_s": {
+    "median": 0.279,
+    "min": 0.182,
+    "max": 0.455,
+    "n": 3
+   },
+   "f_start_hz": {
+    "median": 4359.375,
+    "min": 3421.875,
+    "max": 4828.125,
+    "n": 3
+   },
+   "f_end_hz": {
+    "median": 4359.375,
+    "min": 3515.625,
+    "max": 4875.0,
+    "n": 3
+   },
+   "f_med_hz": {
+    "median": 4359.375,
+    "min": 4125.0,
+    "max": 4875.0,
+    "n": 3
+   },
+   "f_peak_hz": {
+    "median": 4640.625,
+    "min": 4359.375,
+    "max": 4875.0,
+    "n": 3
+   },
+   "f_min_hz": {
+    "median": 4359.375,
+    "min": 3046.875,
+    "max": 4828.125,
+    "n": 3
+   },
+   "harm2_ratio": {
+    "median": 0.001,
+    "min": 0.0,
+    "max": 0.002,
+    "n": 3
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 3
+   },
+   "peak_amp_rel": {
+    "median": 0.417,
+    "min": 0.132,
+    "max": 0.471,
+    "n": 3
+   },
+   "contour_template_hz": [
+    4359.4,
+    4359.4,
+    4359.4,
+    4640.6,
+    4640.6,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4640.6,
+    4359.4,
+    4359.4,
+    4359.4
+   ],
+   "amp_template": [
+    0.1201,
+    0.1953,
+    0.3749,
+    0.3765,
+    0.4159,
+    0.4527,
+    0.7436,
+    0.7244,
+    0.652,
+    0.8743,
+    0.7948,
+    0.3806,
+    0.29,
+    0.2296,
+    0.1057,
+    0.0538
+   ],
+   "tremolo": {
+    "rate_hz": {
+     "median": 15.95,
+     "min": 14.3,
+     "max": 17.6,
+     "n": 2
+    },
+    "depth_index": {
+     "median": 0.802,
+     "min": 0.801,
+     "max": 0.804,
+     "n": 2
+    },
+    "n_measured": 2
+   },
+   "voice": 1,
+   "grid_dur_s": 0.268
+  },
+  "S": {
+   "name": "Sustained flute",
+   "n_instances": 7,
+   "dur_s": {
+    "median": 0.362,
+    "min": 0.303,
+    "max": 0.519,
+    "n": 7
+   },
+   "f_start_hz": {
+    "median": 3585.938,
+    "min": 2906.25,
+    "max": 4312.5,
+    "n": 7
+   },
+   "f_end_hz": {
+    "median": 3445.312,
+    "min": 2859.375,
+    "max": 4312.5,
+    "n": 7
+   },
+   "f_med_hz": {
+    "median": 3421.875,
+    "min": 2718.75,
+    "max": 4828.125,
+    "n": 7
+   },
+   "f_peak_hz": {
+    "median": 4218.75,
+    "min": 3187.5,
+    "max": 6843.75,
+    "n": 7
+   },
+   "f_min_hz": {
+    "median": 2625.0,
+    "min": 1875.0,
+    "max": 4218.75,
+    "n": 7
+   },
+   "harm2_ratio": {
+    "median": 0.001,
+    "min": 0.0,
+    "max": 0.005,
+    "n": 7
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.001,
+    "n": 7
+   },
+   "peak_amp_rel": {
+    "median": 0.258,
+    "min": 0.13,
+    "max": 0.595,
+    "n": 7
+   },
+   "contour_template_hz": [
+    4265.6,
+    3984.4,
+    3515.6,
+    3187.5,
+    3375.0,
+    2953.1,
+    2906.2,
+    2906.2,
+    2906.2,
+    3328.1,
+    3140.6,
+    3140.6,
+    3778.1,
+    3234.4,
+    3459.4,
+    3140.6
+   ],
+   "amp_template": [
+    0.1934,
+    0.2089,
+    0.3588,
+    0.4732,
+    0.3435,
+    0.3598,
+    0.3391,
+    0.275,
+    0.2496,
+    0.2621,
+    0.4778,
+    0.2163,
+    0.3246,
+    0.2402,
+    0.0741,
+    0.0882
+   ],
+   "tremolo": {
+    "rate_hz": {
+     "median": 10.3,
+     "min": 8.4,
+     "max": 11.6,
+     "n": 7
+    },
+    "depth_index": {
+     "median": 0.808,
+     "min": 0.679,
+     "max": 0.907,
+     "n": 7
+    },
+    "n_measured": 7
+   },
+   "voice": 0,
+   "grid_dur_s": 0.335
+  },
+  "U": {
+   "name": "Up-slur flute",
+   "n_instances": 4,
+   "dur_s": {
+    "median": 0.423,
+    "min": 0.27,
+    "max": 0.592,
+    "n": 4
+   },
+   "f_start_hz": {
+    "median": 3281.25,
+    "min": 1921.875,
+    "max": 3843.75,
+    "n": 4
+   },
+   "f_end_hz": {
+    "median": 3773.438,
+    "min": 2437.5,
+    "max": 4312.5,
+    "n": 4
+   },
+   "f_med_hz": {
+    "median": 3656.25,
+    "min": 2437.5,
+    "max": 4031.25,
+    "n": 4
+   },
+   "f_peak_hz": {
+    "median": 4546.875,
+    "min": 3375.0,
+    "max": 4921.875,
+    "n": 4
+   },
+   "f_min_hz": {
+    "median": 2648.438,
+    "min": 1875.0,
+    "max": 3000.0,
+    "n": 4
+   },
+   "harm2_ratio": {
+    "median": 0.002,
+    "min": 0.001,
+    "max": 0.004,
+    "n": 4
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 4
+   },
+   "peak_amp_rel": {
+    "median": 0.37,
+    "min": 0.297,
+    "max": 0.871,
+    "n": 4
+   },
+   "contour_template_hz": [
+    3234.4,
+    3445.3,
+    3318.8,
+    3257.8,
+    3421.9,
+    3750.0,
+    3539.1,
+    3796.9,
+    3378.1,
+    3421.9,
+    3187.5,
+    3187.5,
+    3539.1,
+    3164.1,
+    3473.4,
+    3210.9
+   ],
+   "amp_template": [
+    0.1404,
+    0.2785,
+    0.3162,
+    0.5498,
+    0.4207,
+    0.5224,
+    0.1732,
+    0.2583,
+    0.2936,
+    0.3811,
+    0.5372,
+    0.4905,
+    0.2974,
+    0.3553,
+    0.0947,
+    0.0634
+   ],
+   "tremolo": {
+    "rate_hz": {
+     "median": 14.35,
+     "min": 11.1,
+     "max": 15.2,
+     "n": 4
+    },
+    "depth_index": {
+     "median": 0.824,
+     "min": 0.721,
+     "max": 0.899,
+     "n": 4
+    },
+    "n_measured": 4
+   },
+   "voice": 1,
+   "grid_dur_s": 0.402
+  },
+  "D": {
+   "name": "Down-slur flute",
+   "n_instances": 5,
+   "dur_s": {
+    "median": 0.459,
+    "min": 0.306,
+    "max": 0.978,
+    "n": 5
+   },
+   "f_start_hz": {
+    "median": 3843.75,
+    "min": 3187.5,
+    "max": 6093.75,
+    "n": 5
+   },
+   "f_end_hz": {
+    "median": 2859.375,
+    "min": 2484.375,
+    "max": 4546.875,
+    "n": 5
+   },
+   "f_med_hz": {
+    "median": 3375.0,
+    "min": 2906.25,
+    "max": 4898.438,
+    "n": 5
+   },
+   "f_peak_hz": {
+    "median": 4921.875,
+    "min": 4359.375,
+    "max": 6468.75,
+    "n": 5
+   },
+   "f_min_hz": {
+    "median": 2231.25,
+    "min": 1781.25,
+    "max": 3984.375,
+    "n": 5
+   },
+   "harm2_ratio": {
+    "median": 0.002,
+    "min": 0.001,
+    "max": 0.015,
+    "n": 5
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 5
+   },
+   "peak_amp_rel": {
+    "median": 0.151,
+    "min": 0.083,
+    "max": 0.902,
+    "n": 5
+   },
+   "contour_template_hz": [
+    3515.6,
+    3843.8,
+    3890.6,
+    4453.1,
+    3684.4,
+    3562.5,
+    3778.1,
+    3337.5,
+    2906.2,
+    2906.2,
+    4390.6,
+    4218.8,
+    3750.0,
+    2918.7,
+    2837.5,
+    3656.2
+   ],
+   "amp_template": [
+    0.3326,
+    0.5161,
+    0.33,
+    0.3574,
+    0.3075,
+    0.1858,
+    0.2686,
+    0.2435,
+    0.5433,
+    0.2182,
+    0.3699,
+    0.3478,
+    0.265,
+    0.2179,
+    0.2779,
+    0.151
+   ],
+   "tremolo": {
+    "rate_hz": {
+     "median": 9.8,
+     "min": 8.2,
+     "max": 21.5,
+     "n": 5
+    },
+    "depth_index": {
+     "median": 0.73,
+     "min": 0.587,
+     "max": 0.928,
+     "n": 5
+    },
+    "n_measured": 5
+   },
+   "voice": 0,
+   "grid_dur_s": 0.469
+  },
+  "C": {
+   "name": "Chip",
+   "n_instances": 5,
+   "dur_s": {
+    "median": 0.045,
+    "min": 0.036,
+    "max": 0.074,
+    "n": 5
+   },
+   "f_start_hz": {
+    "median": 5976.562,
+    "min": 5437.5,
+    "max": 7218.75,
+    "n": 5
+   },
+   "f_end_hz": {
+    "median": 5953.125,
+    "min": 4500.0,
+    "max": 7031.25,
+    "n": 5
+   },
+   "f_med_hz": {
+    "median": 5906.25,
+    "min": 5015.625,
+    "max": 7031.25,
+    "n": 5
+   },
+   "f_peak_hz": {
+    "median": 5997.656,
+    "min": 5437.5,
+    "max": 7218.75,
+    "n": 5
+   },
+   "f_min_hz": {
+    "median": 5906.25,
+    "min": 4500.0,
+    "max": 6571.875,
+    "n": 5
+   },
+   "harm2_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 5
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 5
+   },
+   "peak_amp_rel": {
+    "median": 0.075,
+    "min": 0.025,
+    "max": 0.1,
+    "n": 5
+   },
+   "contour_template_hz": [
+    6000.0,
+    5981.2,
+    5915.6,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5950.0,
+    5953.1
+   ],
+   "amp_template": [
+    0.5368,
+    0.5914,
+    0.8139,
+    0.8764,
+    0.7893,
+    0.4196,
+    0.4362,
+    0.3675,
+    0.5153,
+    0.6509,
+    0.6149,
+    0.677,
+    0.5961,
+    0.5678,
+    0.4557,
+    0.2411
+   ],
+   "tremolo": null,
+   "voice": 1,
+   "grid_dur_s": 0.067
+  },
+  "u": {
+   "name": "Short up-chirp",
+   "n_instances": 3,
+   "dur_s": {
+    "median": 0.11,
+    "min": 0.095,
+    "max": 0.128,
+    "n": 3
+   },
+   "f_start_hz": {
+    "median": 3703.125,
+    "min": 3468.75,
+    "max": 4500.0,
+    "n": 3
+   },
+   "f_end_hz": {
+    "median": 4359.375,
+    "min": 3750.0,
+    "max": 5156.25,
+    "n": 3
+   },
+   "f_med_hz": {
+    "median": 3796.875,
+    "min": 3703.125,
+    "max": 5203.125,
+    "n": 3
+   },
+   "f_peak_hz": {
+    "median": 4359.375,
+    "min": 3750.0,
+    "max": 5906.25,
+    "n": 3
+   },
+   "f_min_hz": {
+    "median": 3203.906,
+    "min": 2109.375,
+    "max": 4500.0,
+    "n": 3
+   },
+   "harm2_ratio": {
+    "median": 0.002,
+    "min": 0.0,
+    "max": 0.006,
+    "n": 3
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 3
+   },
+   "peak_amp_rel": {
+    "median": 0.103,
+    "min": 0.037,
+    "max": 0.153,
+    "n": 3
+   },
+   "contour_template_hz": [
+    3281.2,
+    3390.6,
+    3750.0,
+    3656.2,
+    3609.4,
+    3265.6,
+    3328.1,
+    3796.9,
+    3796.9,
+    3796.9,
+    3703.1,
+    4071.9,
+    4106.3,
+    4359.4,
+    4312.5,
+    4359.4
+   ],
+   "amp_template": [
+    0.3409,
+    0.1554,
+    0.2552,
+    0.2207,
+    0.2067,
+    0.8919,
+    0.5737,
+    0.4848,
+    0.3942,
+    0.2949,
+    0.1652,
+    0.271,
+    0.1905,
+    0.1884,
+    0.166,
+    0.1534
+   ],
+   "tremolo": null,
+   "voice": 1,
+   "grid_dur_s": 0.134
+  },
+  "d": {
+   "name": "Short down-chirp",
+   "n_instances": 2,
+   "dur_s": {
+    "median": 0.089,
+    "min": 0.082,
+    "max": 0.096,
+    "n": 2
+   },
+   "f_start_hz": {
+    "median": 3257.812,
+    "min": 3234.375,
+    "max": 3281.25,
+    "n": 2
+   },
+   "f_end_hz": {
+    "median": 2707.031,
+    "min": 2648.438,
+    "max": 2765.625,
+    "n": 2
+   },
+   "f_med_hz": {
+    "median": 3257.812,
+    "min": 3234.375,
+    "max": 3281.25,
+    "n": 2
+   },
+   "f_peak_hz": {
+    "median": 3796.875,
+    "min": 3750.0,
+    "max": 3843.75,
+    "n": 2
+   },
+   "f_min_hz": {
+    "median": 2689.453,
+    "min": 2625.0,
+    "max": 2753.906,
+    "n": 2
+   },
+   "harm2_ratio": {
+    "median": 0.004,
+    "min": 0.003,
+    "max": 0.005,
+    "n": 2
+   },
+   "harm3_ratio": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "n": 2
+   },
+   "peak_amp_rel": {
+    "median": 0.162,
+    "min": 0.098,
+    "max": 0.226,
+    "n": 2
+   },
+   "contour_template_hz": [
+    3234.4,
+    3257.8,
+    3773.4,
+    3773.4,
+    3796.9,
+    3796.9,
+    3539.1,
+    3390.6,
+    3156.2,
+    3023.4,
+    2765.6,
+    2718.8,
+    2695.3,
+    2718.8,
+    2718.8,
+    2671.9
+   ],
+   "amp_template": [
+    0.1761,
+    0.1241,
+    0.1418,
+    0.1592,
+    0.2005,
+    0.2566,
+    0.6276,
+    0.6004,
+    0.274,
+    0.2493,
+    0.1715,
+    0.1204,
+    0.1173,
+    0.1112,
+    0.0913,
+    0.0787
+   ],
+   "tremolo": null,
+   "voice": 0,
+   "grid_dur_s": 0.067
+  }
+ },
+ "tremolo": {
+  "present": true,
+  "measured_on_notes": 18,
+  "rate_hz": {
+   "median": 11.05,
+   "min": 8.2,
+   "max": 21.5,
+   "n": 18
+  },
+  "depth_index": {
+   "median": 0.802,
+   "min": 0.587,
+   "max": 0.928,
+   "n": 18
+  },
+  "note": "Every sustained note (dur >= 0.25 s, n=18) carries periodic amplitude modulation: FFT of the 1.5-9 kHz band envelope peaks at 8-22 Hz (median ~11 Hz) with peak-to-mean spectral prominence 6-12 dB, and the envelope percentile depth index (p95-p5)/(p95+p5) is 0.59-0.93 \u2014 the phrase notes are strongly pulsed/shimmering, not steady tones. The page renders this as a gain LFO per note at the per-type median rate; depth in the page is a design scaling of this index (see BUILD-hermit-thrush.md)."
+ },
+ "all_notes": [
+  {
+   "t0": 0.161,
+   "t1": 0.295,
+   "type": "x",
+   "f_med_hz": 1453.1
+  },
+  {
+   "t0": 0.369,
+   "t1": 0.443,
+   "type": "C",
+   "f_med_hz": 7031.2
+  },
+  {
+   "t0": 0.578,
+   "t1": 0.615,
+   "type": "C",
+   "f_med_hz": 5015.6
+  },
+  {
+   "t0": 1.179,
+   "t1": 1.698,
+   "type": "S",
+   "f_med_hz": 3234.4
+  },
+  {
+   "t0": 1.746,
+   "t1": 1.874,
+   "type": "u",
+   "f_med_hz": 3796.9
+  },
+  {
+   "t0": 1.902,
+   "t1": 1.998,
+   "type": "d",
+   "f_med_hz": 3281.2
+  },
+  {
+   "t0": 2.056,
+   "t1": 2.166,
+   "type": "u",
+   "f_med_hz": 3703.1
+  },
+  {
+   "t0": 2.216,
+   "t1": 2.298,
+   "type": "d",
+   "f_med_hz": 3234.4
+  },
+  {
+   "t0": 4.649,
+   "t1": 4.695,
+   "type": "C",
+   "f_med_hz": 5906.2
+  },
+  {
+   "t0": 4.801,
+   "t1": 4.896,
+   "type": "u",
+   "f_med_hz": 5203.1
+  },
+  {
+   "t0": 4.946,
+   "t1": 5.271,
+   "type": "D",
+   "f_med_hz": 4898.4
+  },
+  {
+   "t0": 5.39,
+   "t1": 5.449,
+   "type": "C",
+   "f_med_hz": 5156.2
+  },
+  {
+   "t0": 5.74,
+   "t1": 6.332,
+   "type": "U",
+   "f_med_hz": 2437.5
+  },
+  {
+   "t0": 6.408,
+   "t1": 6.767,
+   "type": "S",
+   "f_med_hz": 2765.6
+  },
+  {
+   "t0": 11.038,
+   "t1": 11.492,
+   "type": "W",
+   "f_med_hz": 4125.0
+  },
+  {
+   "t0": 11.545,
+   "t1": 11.876,
+   "type": "U",
+   "f_med_hz": 3468.8
+  },
+  {
+   "t0": 17.323,
+   "t1": 17.782,
+   "type": "D",
+   "f_med_hz": 4171.9
+  },
+  {
+   "t0": 23.761,
+   "t1": 24.031,
+   "type": "U",
+   "f_med_hz": 3843.8
+  },
+  {
+   "t0": 24.061,
+   "t1": 24.364,
+   "type": "S",
+   "f_med_hz": 3750.0
+  },
+  {
+   "t0": 24.403,
+   "t1": 24.709,
+   "type": "D",
+   "f_med_hz": 2906.2
+  },
+  {
+   "t0": 26.1,
+   "t1": 26.14,
+   "type": "C",
+   "f_med_hz": 6468.8
+  },
+  {
+   "t0": 26.253,
+   "t1": 26.694,
+   "type": "S",
+   "f_med_hz": 4828.1
+  },
+  {
+   "t0": 27.185,
+   "t1": 27.574,
+   "type": "S",
+   "f_med_hz": 3937.5
+  },
+  {
+   "t0": 27.606,
+   "t1": 27.968,
+   "type": "S",
+   "f_med_hz": 2718.8
+  },
+  {
+   "t0": 28.006,
+   "t1": 28.596,
+   "type": "D",
+   "f_med_hz": 3140.6
+  },
+  {
+   "t0": 34.31,
+   "t1": 34.491,
+   "type": "W",
+   "f_med_hz": 4875.0
+  },
+  {
+   "t0": 34.531,
+   "t1": 35.046,
+   "type": "U",
+   "f_med_hz": 4031.2
+  },
+  {
+   "t0": 35.083,
+   "t1": 35.413,
+   "type": "S",
+   "f_med_hz": 3421.9
+  },
+  {
+   "t0": 38.969,
+   "t1": 39.248,
+   "type": "W",
+   "f_med_hz": 4359.4
+  },
+  {
+   "t0": 39.281,
+   "t1": 40.259,
+   "type": "D",
+   "f_med_hz": 3375.0
+  }
+ ]
+}

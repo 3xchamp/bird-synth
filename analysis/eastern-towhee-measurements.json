@@ -1,0 +1,635 @@
+{
+ "species": "Eastern Towhee (Pipilo erythrophthalmus)",
+ "primary_reference": {
+  "file": "XC1015083.wav",
+  "xeno_canto_id": "XC1015083",
+  "recordist": "Stanislas Wroza",
+  "location": "La Haute-Yamaska (near Shefford), Estrie, Québec, Canada",
+  "date": "2025-06-07",
+  "time": "06:30",
+  "license": "CC BY-NC-SA 4.0 — verified on the live recording page 2026-11-12 (build-night flag resolved; grade A, background none)",
+  "xc_grade": "CC BY-NC-SA 4.0 — verified on the live recording page 2026-11-12 (build-night flag resolved; grade A, background none)",
+  "sample_rate_hz": 48000,
+  "duration_s": 86.57
+ },
+ "method": "STFT (1024-pt Hann, 128 hop) dominant-peak pitch track in 1.3-9.5 kHz; song segmentation on the 1.5-9 kHz band Hilbert envelope (3 ms smoothing), onset -28 dB / offset -34 dB rel. file peak, min off-time 400 ms, min song 300 ms. Songs with band peak <= -15 dB are distant countersongs and are excluded from templates. Within a loud song, fine segmentation (onset -30 / offset -36 dB, min off 8 ms, min note 12 ms) splits intro notes from the trill; the trill is the fine element >= 0.30 s. Trill notes are segmented inside the trill on a 1 ms envelope at 40% of the trill peak (offset 32%), min note 8 ms, min off 6 ms; trill rate = (n-1)/(last onset - first onset). Note f_start/f_end = median track over first/last 20%; f_peak/f_min = 95th/5th percentile; contour/amp templates = per-note tracks resampled to 16 points, median across instances. Contamination scan: 0.25 s window RMS, 60-500 Hz band and full band; a swell = 1 s-smoothed level > file median + 7 dB sustained >= 1.5 s (spans < 2 s apart merged).",
+ "contamination_scan": {
+  "low_freq_band_hz": [
+   60,
+   500
+  ],
+  "lf_baseline_db": -76.9,
+  "lf_swell_spans_s": [],
+  "broadband_baseline_db": -51.0,
+  "broadband_swell_spans_s": [
+   [
+    0.0,
+    3.0,
+    27.0
+   ],
+   [
+    11.5,
+    13.25,
+    29.7
+   ],
+   [
+    17.75,
+    19.5,
+    30.5
+   ],
+   [
+    26.25,
+    28.0,
+    38.2
+   ],
+   [
+    33.5,
+    35.25,
+    36.5
+   ],
+   [
+    40.5,
+    42.25,
+    35.9
+   ],
+   [
+    46.5,
+    48.25,
+    34.4
+   ],
+   [
+    52.25,
+    54.0,
+    35.6
+   ],
+   [
+    57.5,
+    59.25,
+    33.9
+   ],
+   [
+    64.5,
+    66.0,
+    35.7
+   ],
+   [
+    71.5,
+    73.25,
+    35.5
+   ],
+   [
+    77.75,
+    79.25,
+    34.7
+   ],
+   [
+    83.75,
+    85.5,
+    34.6
+   ]
+  ],
+  "gap_floor_p10_db": -70.4,
+  "phrase_p90_db": -18.3,
+  "verdict": "see SOURCES.md"
+ },
+ "songs_total": 17,
+ "songs_loud": 14,
+ "songs_faint_excluded": 3,
+ "faint_song_peaks_db": [
+  -27.6,
+  -26.9,
+  -27.1
+ ],
+ "song_info": [
+  {
+   "t_start": 0.426,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.165
+   ],
+   "intro_to_trill_gap_s": 0.098,
+   "trill_dur_s": 0.591,
+   "trill_notes": 7,
+   "trill_rate_per_s": 11.96,
+   "song_dur_s": 1.214
+  },
+  {
+   "t_start": 5.637,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.176
+   ],
+   "intro_to_trill_gap_s": 0.083,
+   "trill_dur_s": 0.483,
+   "trill_notes": 7,
+   "trill_rate_per_s": 13.58,
+   "song_dur_s": 1.102
+  },
+  {
+   "t_start": 11.445,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.164
+   ],
+   "intro_to_trill_gap_s": 0.09,
+   "trill_dur_s": 0.584,
+   "trill_notes": 7,
+   "trill_rate_per_s": 12.01,
+   "song_dur_s": 1.197
+  },
+  {
+   "t_start": 17.972,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.16
+   ],
+   "intro_to_trill_gap_s": 0.089,
+   "trill_dur_s": 0.561,
+   "trill_notes": 6,
+   "trill_rate_per_s": 12.03,
+   "song_dur_s": 1.162
+  },
+  {
+   "t_start": 26.459,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.143
+   ],
+   "intro_to_trill_gap_s": 0.056,
+   "trill_dur_s": 0.598,
+   "trill_notes": 9,
+   "trill_rate_per_s": 15.99,
+   "song_dur_s": 1.211
+  },
+  {
+   "t_start": 33.521,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.146
+   ],
+   "intro_to_trill_gap_s": 0.077,
+   "trill_dur_s": 0.619,
+   "trill_notes": 9,
+   "trill_rate_per_s": 15.94,
+   "song_dur_s": 1.232
+  },
+  {
+   "t_start": 40.672,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.154
+   ],
+   "intro_to_trill_gap_s": 0.054,
+   "trill_dur_s": 0.653,
+   "trill_notes": 8,
+   "trill_rate_per_s": 14.01,
+   "song_dur_s": 1.27
+  },
+  {
+   "t_start": 46.554,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.119
+   ],
+   "intro_to_trill_gap_s": 0.078,
+   "trill_dur_s": 0.602,
+   "trill_notes": 8,
+   "trill_rate_per_s": 13.99,
+   "song_dur_s": 1.216
+  },
+  {
+   "t_start": 52.448,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.127
+   ],
+   "intro_to_trill_gap_s": 0.075,
+   "trill_dur_s": 0.592,
+   "trill_notes": 9,
+   "trill_rate_per_s": 16.04,
+   "song_dur_s": 1.196
+  },
+  {
+   "t_start": 57.738,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.143
+   ],
+   "intro_to_trill_gap_s": 0.08,
+   "trill_dur_s": 0.618,
+   "trill_notes": 10,
+   "trill_rate_per_s": 17.99,
+   "song_dur_s": 1.235
+  },
+  {
+   "t_start": 64.397,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.168
+   ],
+   "intro_to_trill_gap_s": 0.057,
+   "trill_dur_s": 0.611,
+   "trill_notes": 8,
+   "trill_rate_per_s": 13.99,
+   "song_dur_s": 1.239
+  },
+  {
+   "t_start": 71.635,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.167
+   ],
+   "intro_to_trill_gap_s": 0.064,
+   "trill_dur_s": 0.632,
+   "trill_notes": 10,
+   "trill_rate_per_s": 18.03,
+   "song_dur_s": 1.253
+  },
+  {
+   "t_start": 77.762,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.106
+   ],
+   "intro_to_trill_gap_s": 0.077,
+   "trill_dur_s": 0.582,
+   "trill_notes": 8,
+   "trill_rate_per_s": 14.08,
+   "song_dur_s": 1.184
+  },
+  {
+   "t_start": 83.936,
+   "n_intros": 2,
+   "intro_gaps_s": [
+    0.142
+   ],
+   "intro_to_trill_gap_s": 0.075,
+   "trill_dur_s": 0.624,
+   "trill_notes": 8,
+   "trill_rate_per_s": 13.99,
+   "song_dur_s": 1.235
+  }
+ ],
+ "intros_per_song": {
+  "median": 2.0,
+  "min": 2.0,
+  "max": 2.0,
+  "n": 14
+ },
+ "intro_gap_s": {
+  "median": 0.15,
+  "min": 0.106,
+  "max": 0.176,
+  "n": 14
+ },
+ "intro_to_trill_gap_s": {
+  "median": 0.077,
+  "min": 0.054,
+  "max": 0.098,
+  "n": 14
+ },
+ "inter_song_pause_s": {
+  "median": 4.99,
+  "min": 3.997,
+  "max": 7.325,
+  "n": 13
+ },
+ "trill_notes_per_song": {
+  "median": 8.0,
+  "min": 6.0,
+  "max": 10.0,
+  "n": 14
+ },
+ "trill_rate_per_s": {
+  "median": 14.0,
+  "min": 11.96,
+  "max": 18.03,
+  "n": 14
+ },
+ "phrase_types": {
+  "I1": {
+   "n_instances": 14,
+   "dur_s": {
+    "median": 0.178,
+    "min": 0.158,
+    "max": 0.205,
+    "n": 14
+   },
+   "f_start_hz": {
+    "median": 3691.406,
+    "min": 3000.0,
+    "max": 3796.875,
+    "n": 14
+   },
+   "f_end_hz": {
+    "median": 2378.906,
+    "min": 1875.0,
+    "max": 3140.625,
+    "n": 14
+   },
+   "f_peak_hz": {
+    "median": 3772.266,
+    "min": 3609.375,
+    "max": 3869.531,
+    "n": 14
+   },
+   "f_min_hz": {
+    "median": 1875.0,
+    "min": 1875.0,
+    "max": 1921.875,
+    "n": 14
+   },
+   "harm2_ratio": {
+    "median": 0.013,
+    "min": 0.006,
+    "max": 0.023,
+    "n": 14
+   },
+   "peak_amp_rel": {
+    "median": 0.329,
+    "min": 0.137,
+    "max": 0.472,
+    "n": 14
+   },
+   "contour_template_hz": [
+    3726.6,
+    3734.4,
+    2929.7,
+    3000.0,
+    3046.9,
+    3093.8,
+    3140.6,
+    3140.6,
+    3187.5,
+    3187.5,
+    3179.7,
+    2442.2,
+    1921.9,
+    1945.3,
+    2550.0,
+    3093.8
+   ],
+   "amp_template": [
+    0.1215,
+    0.4545,
+    0.454,
+    0.7205,
+    0.8865,
+    0.8661,
+    0.9011,
+    0.8936,
+    0.7875,
+    0.5949,
+    0.1835,
+    0.138,
+    0.1562,
+    0.1861,
+    0.1046,
+    0.0486
+   ]
+  },
+  "I2": {
+   "n_instances": 14,
+   "dur_s": {
+    "median": 0.213,
+    "min": 0.192,
+    "max": 0.236,
+    "n": 14
+   },
+   "f_start_hz": {
+    "median": 2671.875,
+    "min": 2625.0,
+    "max": 2718.75,
+    "n": 14
+   },
+   "f_end_hz": {
+    "median": 2625.0,
+    "min": 2554.688,
+    "max": 2625.0,
+    "n": 14
+   },
+   "f_peak_hz": {
+    "median": 2718.75,
+    "min": 2671.875,
+    "max": 2765.625,
+    "n": 14
+   },
+   "f_min_hz": {
+    "median": 2578.125,
+    "min": 2484.375,
+    "max": 2578.125,
+    "n": 14
+   },
+   "harm2_ratio": {
+    "median": 0.01,
+    "min": 0.005,
+    "max": 0.019,
+    "n": 14
+   },
+   "peak_amp_rel": {
+    "median": 0.299,
+    "min": 0.114,
+    "max": 0.408,
+    "n": 14
+   },
+   "contour_template_hz": [
+    2625.0,
+    2671.9,
+    2671.9,
+    2695.3,
+    2657.8,
+    2671.9,
+    2671.9,
+    2671.9,
+    2667.2,
+    2671.9,
+    2664.1,
+    2671.9,
+    2625.0,
+    2625.0,
+    2578.1,
+    2601.6
+   ],
+   "amp_template": [
+    0.1063,
+    0.362,
+    0.6427,
+    0.7213,
+    0.6811,
+    0.8524,
+    0.7412,
+    0.765,
+    0.7365,
+    0.6718,
+    0.6206,
+    0.5358,
+    0.5257,
+    0.4,
+    0.2509,
+    0.0532
+   ]
+  },
+  "TRILL": {
+   "n_instances": 14,
+   "dur_s": {
+    "median": 0.6,
+    "min": 0.483,
+    "max": 0.653,
+    "n": 14
+   },
+   "f_start_hz": {
+    "median": 4218.75,
+    "min": 4171.875,
+    "max": 4312.5,
+    "n": 14
+   },
+   "f_end_hz": {
+    "median": 4078.125,
+    "min": 3984.375,
+    "max": 4125.0,
+    "n": 14
+   },
+   "f_peak_hz": {
+    "median": 4780.078,
+    "min": 4687.5,
+    "max": 4828.125,
+    "n": 14
+   },
+   "f_min_hz": {
+    "median": 3703.125,
+    "min": 3000.0,
+    "max": 3890.625,
+    "n": 14
+   },
+   "harm2_ratio": {
+    "median": 0.007,
+    "min": 0.005,
+    "max": 0.015,
+    "n": 14
+   },
+   "peak_amp_rel": {
+    "median": 0.747,
+    "min": 0.253,
+    "max": 1.064,
+    "n": 14
+   },
+   "contour_template_hz": [
+    2953.1,
+    4218.8,
+    4239.1,
+    4171.9,
+    4181.2,
+    4078.1,
+    4148.4,
+    4078.1,
+    4125.0,
+    4078.1,
+    4125.0,
+    4031.2,
+    4078.1,
+    4031.2,
+    4040.6,
+    4078.1
+   ],
+   "amp_template": [
+    0.0424,
+    0.4615,
+    0.0634,
+    0.4646,
+    0.0694,
+    0.4365,
+    0.1034,
+    0.4021,
+    0.2068,
+    0.3527,
+    0.2407,
+    0.35,
+    0.3432,
+    0.2102,
+    0.2077,
+    0.0214
+   ]
+  },
+  "TN": {
+   "n_instances": 114,
+   "dur_s": {
+    "median": 0.039,
+    "min": 0.009,
+    "max": 0.062,
+    "n": 114
+   },
+   "f_start_hz": {
+    "median": 4687.5,
+    "min": 3984.375,
+    "max": 5109.375,
+    "n": 114
+   },
+   "f_end_hz": {
+    "median": 4125.0,
+    "min": 3703.125,
+    "max": 4640.625,
+    "n": 114
+   },
+   "f_peak_hz": {
+    "median": 4734.375,
+    "min": 4031.25,
+    "max": 5109.375,
+    "n": 114
+   },
+   "f_min_hz": {
+    "median": 3914.062,
+    "min": 3658.594,
+    "max": 4546.875,
+    "n": 114
+   },
+   "harm2_ratio": {
+    "median": 0.006,
+    "min": 0.003,
+    "max": 0.021,
+    "n": 114
+   },
+   "peak_amp_rel": {
+    "median": 0.525,
+    "min": 0.142,
+    "max": 1.064,
+    "n": 114
+   },
+   "contour_template_hz": [
+    4664.1,
+    4687.5,
+    4718.8,
+    4228.1,
+    4078.1,
+    4070.3,
+    4125.0,
+    4171.9,
+    4171.9,
+    4171.9,
+    4171.9,
+    4157.8,
+    4125.0,
+    4125.0,
+    4125.0,
+    4125.0
+   ],
+   "amp_template": [
+    0.5414,
+    0.9398,
+    0.7242,
+    0.9232,
+    0.7699,
+    0.4269,
+    0.4629,
+    0.495,
+    0.5915,
+    0.6696,
+    0.6861,
+    0.6714,
+    0.6485,
+    0.6276,
+    0.5628,
+    0.4335
+   ]
+  }
+ }
+}

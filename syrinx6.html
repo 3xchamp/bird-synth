@@ -1,0 +1,3581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYRINX·6 — Bird-Synth Engine</title>
+<style>
+  :root{
+    --accent:#ff7a1a; --accent-dim:#a34d0d; --chassis:#232326; --chassis2:#1a1a1d;
+    --panel:#2b2b30; --edge:#3d3d44; --label:#b9b4a8; --label-dim:#7d786c;
+    --screen-bg:#071410; --phosphor:#6df2c4; --led-off:#3a2c22; --txt:#e8e2d4;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:#101012;color:var(--txt);font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;
+    display:flex;justify-content:center;padding:18px 10px 30px;}
+  .chassis{position:relative;width:min(1180px,100%);background:linear-gradient(160deg,#2a2a2e,#1d1d20 60%,#232327);
+    border:1px solid #45454d;border-radius:18px;padding:20px 22px 16px;
+    box-shadow:0 24px 60px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 6px rgba(0,0,0,.5);}
+  .screw{position:absolute;width:15px;height:15px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#8b8b93,#4a4a51 70%);
+    box-shadow:inset 0 0 2px #000, 0 1px 1px rgba(255,255,255,.12);}
+  .screw::after{content:"";position:absolute;left:1.5px;right:1.5px;top:6.5px;height:2px;background:#26262a;transform:rotate(38deg);border-radius:1px}
+  .screw.tl{top:9px;left:9px}.screw.tr{top:9px;right:9px}.screw.bl{bottom:9px;left:9px}.screw.br{bottom:9px;right:9px}
+  /* ---------- header ---------- */
+  header.brand{display:flex;align-items:center;gap:14px;margin:2px 4px 14px}
+  .logo{font-size:30px;font-weight:800;letter-spacing:.14em;color:#f2ecdd}
+  .logo .dot{color:var(--accent)}
+  .tagline{font-size:10.5px;letter-spacing:.3em;color:var(--label-dim);text-transform:uppercase;margin-top:3px}
+  .brand .spacer{flex:1}
+  .pwr{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.22em;color:var(--label)}
+  .led{width:11px;height:11px;border-radius:50%;background:var(--led-off);box-shadow:inset 0 1px 2px rgba(0,0,0,.7);flex:none}
+  .led.on{background:var(--accent);box-shadow:0 0 9px 2px rgba(255,122,26,.55), inset 0 0 2px rgba(255,255,255,.5)}
+  .led.grn.on{background:var(--phosphor);box-shadow:0 0 9px 2px rgba(109,242,196,.5), inset 0 0 2px rgba(255,255,255,.5)}
+  button{font-family:inherit;cursor:pointer}
+  .pwrbtn{background:linear-gradient(180deg,#3a3a40,#26262a);color:var(--label);border:1px solid #4c4c55;
+    border-radius:7px;padding:7px 13px;font-size:11px;letter-spacing:.2em;box-shadow:0 2px 0 #101012, inset 0 1px 0 rgba(255,255,255,.12)}
+  .pwrbtn:active{transform:translateY(1px);box-shadow:0 1px 0 #101012}
+  /* ---------- top row: screen + master ---------- */
+  .toprow{display:flex;gap:16px;align-items:stretch}
+  .screen-bezel{flex:1;background:#0a0a0b;border:1px solid #3c3c42;border-radius:12px;padding:10px;
+    box-shadow:inset 0 2px 12px #000, 0 1px 0 rgba(255,255,255,.06)}
+  .screen{position:relative;background:radial-gradient(120% 130% at 50% 0%,#0c2019,var(--screen-bg) 70%);
+    border-radius:6px;overflow:hidden;box-shadow:inset 0 0 42px rgba(0,0,0,.75)}
+  .screen::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+  #stage{display:block;width:100%;height:auto}
+  #spec{display:block;width:100%;height:64px;background:rgba(0,0,0,.28);border-top:1px solid rgba(109,242,196,.16)}
+  .readout{display:flex;gap:16px;flex-wrap:wrap;padding:7px 10px 8px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12.5px;color:var(--phosphor);text-shadow:0 0 7px rgba(109,242,196,.45);letter-spacing:.04em}
+  .readout .k{color:#3f8f6f;text-shadow:none;font-size:10px;letter-spacing:.18em;margin-right:5px}
+  .readout .it{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* birds */
+  .bird .bob{transition:transform .13s ease-out}
+  .bird.on .bob{transform:translateY(2.6px)}
+  .bird .head{transform-box:fill-box;transform-origin:25% 85%;transition:transform .1s ease-out}
+  .bird.on .head{transform:rotate(var(--tilt,-2.5deg))}
+  .bird .beak-lo{transform-box:fill-box;transform-origin:0% 0%;transition:transform .07s ease-out}
+  .bird.on .beak-lo{transform:rotate(var(--beak,12deg))}
+  .bird .throat{opacity:.45;transform-box:fill-box;transform-origin:center;transition:opacity .12s ease-out,transform .12s ease-out}
+  .bird.on .throat{opacity:.95;transform:scale(1.13)}
+  /* master section */
+  .master{width:238px;flex:none;background:linear-gradient(180deg,#2e2e33,#26262a);border:1px solid var(--edge);
+    border-radius:12px;padding:13px 14px 11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+  .secttl{font-size:10px;letter-spacing:.3em;color:var(--label-dim);text-transform:uppercase;text-align:center;margin-bottom:10px}
+  .bigbtns{display:flex;gap:9px;margin-bottom:13px}
+  .bigbtn{flex:1;border-radius:9px;padding:11px 0 9px;font-size:13px;font-weight:700;letter-spacing:.14em;
+    border:1px solid #55555f;box-shadow:0 3px 0 #101012, inset 0 1px 0 rgba(255,255,255,.14);color:#191914}
+  .bigbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #101012}
+  #btnChorus{background:linear-gradient(180deg,#ff9440,var(--accent) 55%,#e56a0d)}
+  #btnChorus.live{outline:2px solid #ffd9ae;outline-offset:1px}
+  #btnStop{background:linear-gradient(180deg,#4a4a51,#333338);color:var(--label)}
+  .knobgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px 6px;justify-items:center}
+  .knobcell{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .knob{width:56px;height:56px;border-radius:50%;cursor:ns-resize;touch-action:none;position:relative;
+    background:radial-gradient(circle at 34% 28%,#55555e,#2b2b30 62%,#1c1c1f);
+    border:1px solid #101012;box-shadow:0 4px 9px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.22)}
+  .knob.small{width:44px;height:44px}
+  .knob-dial{position:absolute;inset:0}
+  .knob-ptr{position:absolute;left:50%;top:3px;width:3.5px;height:15px;margin-left:-1.75px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 5px rgba(255,122,26,.7)}
+  .knob.small .knob-ptr{height:11px;top:2.5px}
+  .kname{font-size:9.5px;letter-spacing:.24em;color:var(--label);text-transform:uppercase}
+  .kval{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--accent)}
+  /* ---------- song section ---------- */
+  .songsec{margin-top:16px;background:linear-gradient(180deg,#2e2e33,#26262a);border:1px solid var(--edge);
+    border-radius:12px;padding:12px 14px 11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+  .songhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .songtitle{font-size:10px;letter-spacing:.3em;color:var(--label-dim);text-transform:uppercase}
+  .modetoggle{display:flex;gap:0;border:1px solid #55555f;border-radius:8px;overflow:hidden}
+  .modebtn{padding:7px 14px 6px;font-size:11.5px;font-weight:700;letter-spacing:.14em;border:none;cursor:pointer;
+    color:var(--label);background:linear-gradient(180deg,#3d3d43,#2a2a2e)}
+  .modebtn.on{background:linear-gradient(180deg,#ff9440,var(--accent) 55%,#e56a0d);color:#1c1206}
+  .songbody{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  #songpick{flex:1;min-width:210px;padding:8px 9px;border-radius:7px;border:1px solid #55555f;cursor:pointer;
+    background:#1c1c1f;color:#f0ead8;font-size:13px;letter-spacing:.03em}
+  .songtransport{display:flex;gap:9px}
+  .songbtn{border-radius:9px;padding:9px 16px 8px;font-size:12.5px;font-weight:700;letter-spacing:.12em;cursor:pointer;
+    border:1px solid #55555f;box-shadow:0 3px 0 #101012, inset 0 1px 0 rgba(255,255,255,.14);color:#191914;
+    background:linear-gradient(180deg,#7ee2a8,#43b06c 55%,#2f9e57)}
+  .songbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #101012}
+  .songbtn.live{outline:2px solid #c9f5da;outline-offset:1px}
+  .songbtn.stop{background:linear-gradient(180deg,#4a4a51,#333338);color:var(--label)}
+  .songmeta{width:100%;font-size:12px;color:var(--label);letter-spacing:.04em}
+  .songmeta b{color:#f0ead8}
+  .songprog{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--phosphor);min-height:15px}
+  /* mode gating (visual layer; the transport functions enforce the same rules in code) */
+  #chassis.songmode .sing, #chassis.songmode #btnChorus, #chassis.songmode .kbwrap{opacity:.35;pointer-events:none}
+  #chassis:not(.songmode) .songbody{opacity:.35;pointer-events:none}
+  /* ---------- channel strips ---------- */
+  .strips{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px}
+  .strip{background:linear-gradient(180deg,#2d2d32,#242428);border:1px solid var(--edge);border-radius:11px;
+    padding:10px 8px 9px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .strip.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 0 18px rgba(255,122,26,.22), inset 0 1px 0 rgba(255,255,255,.06)}
+  .nameplate{text-align:center;line-height:1.15}
+  .nameplate b{display:block;font-size:12.5px;letter-spacing:.12em;color:#f0ead8}
+  .nameplate span{font-size:9.5px;font-style:italic;color:var(--label-dim);letter-spacing:.02em}
+  .strip .led{align-self:flex-end;margin-bottom:-8px}
+  .sing{width:100%;padding:8px 0 7px;border-radius:7px;border:1px solid #55555f;font-size:12px;font-weight:700;
+    letter-spacing:.18em;color:#e8e2d4;background:linear-gradient(180deg,#3d3d43,#2a2a2e);
+    box-shadow:0 2px 0 #101012, inset 0 1px 0 rgba(255,255,255,.12)}
+  .sing:active{transform:translateY(1px);box-shadow:0 1px 0 #101012}
+  .sing.live{background:linear-gradient(180deg,#ff9440,var(--accent) 60%,#e56a0d);color:#1c1206;border-color:#ffb066}
+  .fader{position:relative;width:38px;height:118px;cursor:ns-resize;touch-action:none}
+  .fader::before{content:"";position:absolute;left:50%;top:4px;bottom:4px;width:6px;margin-left:-3px;border-radius:3px;
+    background:#141416;box-shadow:inset 0 1px 4px #000, 0 1px 0 rgba(255,255,255,.07)}
+  .fader .ftick{position:absolute;left:2px;right:2px;height:1px;background:#4a4a51}
+  .fcap{position:absolute;left:1px;right:1px;height:17px;border-radius:4px;top:50%;
+    background:linear-gradient(180deg,#5a5a63,#38383e 45%,#2b2b30);border:1px solid #101012;
+    box-shadow:0 3px 6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.25)}
+  .fcap::after{content:"";position:absolute;left:3px;right:3px;top:7.5px;height:2px;background:var(--accent);border-radius:1px}
+  .fval{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--label)}
+  .ptype{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.8px;color:var(--phosphor);
+    min-height:13px;text-align:center;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* ---------- keyboard ---------- */
+  .kbwrap{margin-top:16px;background:linear-gradient(180deg,#26262a,#1e1e21);border:1px solid var(--edge);
+    border-radius:11px;padding:12px 12px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .kbhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 9px}
+  .kbhead .t{font-size:10px;letter-spacing:.3em;color:var(--label-dim);text-transform:uppercase}
+  .kbhead .sel{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--accent)}
+  #kb{position:relative;height:148px;user-select:none;-webkit-user-select:none}
+  .key{position:absolute;border-radius:0 0 5px 5px;cursor:pointer}
+  .key.white{background:linear-gradient(180deg,#cfc9ba,#f4efe2 12%,#efe9da);border:1px solid #8f887a;border-top:none;
+    box-shadow:inset -2px 0 3px rgba(0,0,0,.12)}
+  .key.black{background:linear-gradient(180deg,#3c3c41,#101012 70%);border:1px solid #000;border-top:none;z-index:2;
+    box-shadow:0 4px 5px rgba(0,0,0,.45), inset 0 -3px 4px rgba(255,255,255,.09)}
+  .key.on.white{background:linear-gradient(180deg,#ffb066,#ffd9ae 30%,#ffe9cd)}
+  .key.on.black{background:linear-gradient(180deg,#a34d0d,#e56a0d 80%)}
+  .key .kl{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:10.5px;font-weight:700;color:#6d675a;pointer-events:none}
+  .key.black .kl{color:#c9c2b2;font-size:9.5px;bottom:4px}
+  .key .kn2{position:absolute;bottom:19px;left:0;right:0;text-align:center;font-size:8.5px;color:#9a937f;pointer-events:none}
+  /* ---------- footer ---------- */
+  footer.credits{margin-top:14px;padding:10px 6px 2px;border-top:1px solid #34343a;font-size:10.8px;
+    line-height:1.65;color:var(--label-dim)}
+  footer.credits b{color:var(--label);font-weight:600}
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .toprow{flex-direction:column}
+    .master{width:100%}
+    .knobgrid{grid-template-columns:repeat(5,1fr)}
+    .strips{grid-template-columns:repeat(3,1fr)}
+  }
+  @media (max-width:560px){
+    .strips{grid-template-columns:repeat(2,1fr)}
+    .knobgrid{grid-template-columns:repeat(3,1fr)}
+    #kb{height:118px}
+    .logo{font-size:23px}
+  }
+</style>
+</head>
+<body>
+<div class="chassis" id="chassis">
+  <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
+
+  <header class="brand">
+    <div>
+      <div class="logo">SYRINX<span class="dot">·</span>6</div>
+      <div class="tagline">Bird-Synth Engine · Six Measured Voices</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="pwr"><div class="led grn" id="pwrLed"></div><span>POWER</span>
+      <button class="pwrbtn" id="btnPower">ON</button></div>
+  </header>
+
+  <div class="toprow">
+    <div class="screen-bezel">
+      <div class="screen">
+        <svg id="stage" viewBox="0 0 760 246" preserveAspectRatio="xMidYMid meet" aria-label="Six birds on a wire">
+          <path d="M6,190 Q380,204 754,190" fill="none" stroke="#4d7a68" stroke-width="2.4"/>
+          <path d="M6,196 Q380,210 754,196" fill="none" stroke="#2c4a3e" stroke-width="1.2"/>
+
+          <!-- NORTHERN CARDINAL -->
+          <g class="bird" id="bird-cardinal" transform="translate(76,188)" style="--tilt:-3deg">
+            <g class="bob">
+              <polygon points="-28,-2 -54,26 -42,31 -14,4" fill="#9c1522"/>
+              <path d="M6,-1 L7,5 M20,-1 L21,5" stroke="#5c3a1e" stroke-width="2.2"/>
+              <path d="M-26,-6 C-30,-34 -8,-52 14,-52 C34,-52 44,-38 42,-22 C40,-8 26,0 8,2 C-8,4 -22,2 -26,-6 Z" fill="#c22430"/>
+              <path d="M-14,-40 C2,-44 20,-36 24,-22 C12,-15 -4,-18 -14,-26 Z" fill="#9c1522"/>
+              <g class="head">
+                <polygon points="20,-64 29,-90 41,-63" fill="#c22430"/>
+                <circle cx="30" cy="-55" r="15" fill="#c22430"/>
+                <polygon points="23,-65 47,-59 45,-43 30,-45 23,-53" fill="#17130f"/>
+                <ellipse class="throat" cx="37" cy="-41" rx="7" ry="5" fill="#7e0f1c"/>
+                <circle cx="34" cy="-57" r="2.6" fill="#14100c"/><circle cx="35" cy="-58" r="0.9" fill="#fff"/>
+                <polygon points="44,-62 63,-55 44,-51" fill="#f0762a"/>
+                <polygon class="beak-lo" points="44,-51.5 59,-50.5 44,-46.5" fill="#d9641e"/>
+              </g>
+            </g>
+          </g>
+
+          <!-- GREAT HORNED OWL -->
+          <g class="bird" id="bird-owl" transform="translate(198,190)" style="--tilt:-1.2deg">
+            <g class="bob">
+              <path d="M-8,-1 L-7,5 M9,-1 L10,5" stroke="#4a3419" stroke-width="2.4"/>
+              <ellipse cx="-31" cy="-32" rx="8" ry="23" fill="#59391f" transform="rotate(7 -31 -32)"/>
+              <ellipse cx="31" cy="-32" rx="8" ry="23" fill="#59391f" transform="rotate(-7 31 -32)"/>
+              <path d="M-30,2 C-34,-30 -26,-56 -13,-65 L-9,-79 L-2,-68 C5,-71 13,-68 19,-79 L23,-65 C34,-53 36,-28 30,2 C18,6 -18,6 -30,2 Z" fill="#6d4c2f"/>
+              <ellipse class="throat" cx="0" cy="-25" rx="18" ry="23" fill="#d9c9a3"/>
+              <g class="head">
+                <circle cx="-11" cy="-55" r="11.5" fill="#eadfc2"/>
+                <circle cx="11" cy="-55" r="11.5" fill="#eadfc2"/>
+                <circle cx="-11" cy="-55" r="4.6" fill="#241a10"/><circle cx="11" cy="-55" r="4.6" fill="#241a10"/>
+                <circle cx="-12.5" cy="-56.8" r="1.4" fill="#fff"/><circle cx="9.5" cy="-56.8" r="1.4" fill="#fff"/>
+                <polygon points="-3.2,-49 3.2,-49 0,-44" fill="#d9a441"/>
+                <polygon class="beak-lo" points="-2.6,-44.8 2.6,-44.8 0,-41.6" fill="#b98534"/>
+              </g>
+            </g>
+          </g>
+
+          <!-- HERMIT THRUSH -->
+          <g class="bird" id="bird-thrush" transform="translate(330,190)" style="--tilt:-3deg">
+            <g class="bob">
+              <polygon points="-24,-4 -50,14 -43,20 -17,5" fill="#a05a2c"/>
+              <path d="M1,-1 L2,5 M13,-1 L14,5" stroke="#b98a6d" stroke-width="2.1"/>
+              <path d="M-26,-2 C-29,-22 -14,-36 4,-36 C22,-36 32,-25 31,-13 C30,-3 16,2 -1,3 C-15,4 -24,3 -26,-2 Z" fill="#7a4e2d"/>
+              <path d="M-12,-27 C2,-31 15,-26 19,-16 C8,-11 -5,-14 -12,-20 Z" fill="#5d3a1f"/>
+              <g class="throat">
+                <path d="M8,-19 C16,-17 23,-12 25,-6 C20,0 8,2 2,0 C0,-7 2,-15 8,-19 Z" fill="#f2e8d5"/>
+                <circle cx="11" cy="-12" r="1.5" fill="#43301d"/><circle cx="17" cy="-9" r="1.4" fill="#43301d"/>
+                <circle cx="9" cy="-6" r="1.3" fill="#43301d"/><circle cx="15" cy="-3.5" r="1.2" fill="#43301d"/>
+                <circle cx="20" cy="-13" r="1.2" fill="#43301d"/>
+              </g>
+              <g class="head">
+                <circle cx="17" cy="-32" r="12" fill="#7a4e2d"/>
+                <circle cx="20" cy="-33" r="4.6" fill="none" stroke="#f2e8d5" stroke-width="1.6"/>
+                <circle cx="20" cy="-33" r="2.2" fill="#171310"/>
+                <polygon points="28,-34 43,-31 28,-29" fill="#3a2c1e"/>
+                <polygon class="beak-lo" points="28,-29.5 40,-28 28,-26.5" fill="#d9b48f"/>
+              </g>
+            </g>
+          </g>
+
+          <!-- CAROLINA WREN -->
+          <g class="bird" id="bird-wren" transform="translate(452,186)" style="--tilt:-4deg">
+            <g class="bob">
+              <polygon points="-15,-14 -35,-35 -26,-38 -6,-21" fill="#7e451f"/>
+              <path d="M-2,-1 L-1,5 M9,-1 L10,5" stroke="#4c2f14" stroke-width="2"/>
+              <path d="M-20,0 C-24,-16 -12,-28 4,-28 C20,-28 28,-18 26,-8 C24,0 12,4 0,4 C-10,4 -18,4 -20,0 Z" fill="#a05a2c"/>
+              <path d="M-8,-22 C4,-24 14,-18 16,-10 C6,-6 -4,-8 -8,-14 Z" fill="#7e451f"/>
+              <path d="M-6,-17 C3,-18 10,-15 13,-11" fill="none" stroke="#e8cf9f" stroke-width="1.4"/>
+              <g class="head">
+                <circle cx="18" cy="-29" r="11" fill="#a05a2c"/>
+                <path d="M8,-33 Q18,-38 28,-32" fill="none" stroke="#f0dfbe" stroke-width="2.4"/>
+                <ellipse class="throat" cx="22" cy="-21" rx="5.5" ry="4" fill="#e8cf9f"/>
+                <circle cx="20" cy="-30" r="2" fill="#171310"/>
+                <polygon points="28,-32 45,-29 28,-27" fill="#3a2c1c"/>
+                <polygon class="beak-lo" points="28,-27.5 41,-26 28,-24.5" fill="#2c2115"/>
+              </g>
+            </g>
+          </g>
+
+          <!-- SONG SPARROW -->
+          <g class="bird" id="bird-sparrow" transform="translate(572,188)" style="--tilt:-2.5deg">
+            <g class="bob">
+              <polygon points="-24,-3 -46,16 -38,20 -16,5" fill="#6e5843"/>
+              <path d="M2,-1 L3,5 M14,-1 L15,5" stroke="#4c3a24" stroke-width="2.1"/>
+              <path d="M-24,0 C-28,-20 -14,-34 4,-34 C22,-34 32,-22 30,-10 C28,0 14,4 -2,4 C-14,4 -22,4 -24,0 Z" fill="#8a7358"/>
+              <path d="M-12,-26 C2,-30 16,-25 20,-15 C8,-10 -6,-13 -12,-19 Z" fill="#6e5843"/>
+              <rect x="-4" y="-21" width="17" height="2.6" fill="#e8e2d4" transform="rotate(-14 -4 -21)"/>
+              <g class="head">
+                <circle cx="16" cy="-31" r="12" fill="#8a7358"/>
+                <path d="M4,-35 C6,-45 26,-45 28,-34 C20,-38 12,-38 4,-35 Z" fill="#7a3b1e"/>
+                <path d="M5,-29 Q16,-26 27,-28" fill="none" stroke="#e8e2d4" stroke-width="2"/>
+                <polygon class="throat" points="10,-25 24,-25 20,-13 13,-15" fill="#26221e"/>
+                <circle cx="19" cy="-31" r="2.1" fill="#171310"/>
+                <polygon points="27,-33 41,-30 27,-28" fill="#6b6f75"/>
+                <polygon class="beak-lo" points="27,-28.5 38,-27 27,-25.5" fill="#565a60"/>
+              </g>
+            </g>
+          </g>
+
+          <!-- EASTERN TOWHEE -->
+          <g class="bird" id="bird-towhee" transform="translate(688,190)" style="--tilt:-3deg">
+            <g class="bob">
+              <polygon points="-24,-4 -50,15 -42,20 -18,6" fill="#141416"/>
+              <polygon points="-50,15 -42,20 -37,12" fill="#f3efe6"/>
+              <path d="M4,-1 L5,5 M16,-1 L17,5" stroke="#333" stroke-width="2.2"/>
+              <path d="M-26,0 C-30,-22 -16,-36 4,-36 C24,-36 34,-24 32,-12 C30,-2 16,4 -2,4 C-16,4 -24,4 -26,0 Z" fill="#1d1d1f"/>
+              <path d="M-6,-16 C6,-18 20,-14 24,-6 C16,2 -2,4 -10,2 C-14,-4 -12,-12 -6,-16 Z" fill="#f3efe6"/>
+              <path class="throat" d="M12,-14 C20,-12 24,-8 24,-5 C18,-1 10,-1 6,-3 C6,-8 8,-12 12,-14 Z" fill="#b4551d"/>
+              <g class="head">
+                <circle cx="18" cy="-33" r="12.5" fill="#141416"/>
+                <circle cx="21" cy="-34" r="2.4" fill="#c22f1d"/>
+                <polygon points="30,-35 45,-32 30,-30" fill="#4a4d52"/>
+                <polygon class="beak-lo" points="30,-30.5 42,-29 30,-27.5" fill="#3a3d41"/>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <canvas id="spec" width="880" height="64"></canvas>
+        <div class="readout">
+          <div class="it"><span class="k">ON AIR</span><span id="roActive">—</span></div>
+          <div class="it"><span class="k">PHRASE</span><span id="roPhrase">ready — pick a bird, press SING</span></div>
+          <div class="it"><span class="k">MORPH</span><span id="roMorph">0%</span></div>
+          <div class="it"><span class="k">GRID</span><span id="roBpm">112 BPM</span></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="master">
+      <div class="secttl">Master</div>
+      <div class="bigbtns">
+        <button class="bigbtn" id="btnChorus">CHORUS</button>
+        <button class="bigbtn" id="btnStop">STOP</button>
+      </div>
+      <div class="knobgrid">
+        <div class="knobcell">
+          <div class="knob" id="knobMMorph"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Morph</div><div class="kval" id="valMMorph">0%</div>
+        </div>
+        <div class="knobcell">
+          <div class="knob" id="knobFull"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Fullness</div><div class="kval" id="valFull">0%</div>
+        </div>
+        <div class="knobcell">
+          <div class="knob" id="knobBreath"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Breath</div><div class="kval" id="valBreath">100%</div>
+        </div>
+        <div class="knobcell">
+          <div class="knob" id="knobTempo"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Tempo</div><div class="kval" id="valTempo">112</div>
+        </div>
+        <div class="knobcell">
+          <div class="knob" id="knobSpace"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Space</div><div class="kval" id="valSpace">0%</div>
+        </div>
+        <div class="knobcell">
+          <div class="knob" id="knobVol"><div class="knob-dial"><div class="knob-ptr"></div></div></div>
+          <div class="kname">Volume</div><div class="kval" id="valVol">90%</div>
+        </div>
+        <div class="knobcell">
+          <div class="led grn" id="masterLed" style="margin-top:16px"></div>
+          <div class="kname" style="margin-top:2px">Signal</div><div class="kval" id="valSig">idle</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="songsec" id="songsec">
+    <div class="songhead">
+      <span class="songtitle">Song</span>
+      <div class="modetoggle" role="group" aria-label="mode">
+        <button class="modebtn on" id="mode-free">FREE PLAY</button><button class="modebtn" id="mode-song">SONG</button>
+      </div>
+    </div>
+    <div class="songbody" id="songbody">
+      <select id="songpick" aria-label="song library"></select>
+      <div class="songtransport">
+        <button class="songbtn" id="songplay">▶ PLAY SONG</button>
+        <button class="songbtn stop" id="songstop">■ STOP</button>
+      </div>
+      <div class="songmeta" id="songmeta"></div>
+      <div class="songprog" id="songprog">—</div>
+    </div>
+  </div>
+
+  <div class="strips" id="strips"></div>
+
+  <div class="kbwrap">
+    <div class="kbhead">
+      <div class="t">Keyboard — plays the selected bird’s voice</div>
+      <div class="sel" id="kbSel">▸ NORTHERN CARDINAL</div>
+    </div>
+    <div id="kb"></div>
+  </div>
+
+  <footer class="credits">
+    <b>Voices, measured — not sampled.</b> Every note on this page is synthesized from pitch contours, amplitude
+    envelopes and timing measured off a single reference recording per bird; no recording audio is used or played.
+    <b>Northern Cardinal</b> — XC75501, Jonathon Jongsma, CC BY-SA 3.0 ·
+    <b>Great Horned Owl</b> — XC11638, Nathan Pieplow, CC BY-NC-ND 2.5 ·
+    <b>Hermit Thrush</b> — XC1048898, AUDEVARD Aurélien, CC BY-NC-SA 4.0 ·
+    <b>Carolina Wren</b> — XC364592, Brian Murphy, CC BY-NC-SA 4.0 ·
+    <b>Song Sparrow</b> — XC1005250, Ryan Douglas, CC BY-SA 4.0 ·
+    <b>Eastern Towhee</b> — XC1015083, Stanislas Wroza, CC BY-NC-SA 4.0 ·
+    Recordings via Xeno-canto. The Bird⇄Electronic morph (per-channel knob + master) pulls pitch to an
+    A-major-pentatonic grid and timing to the TEMPO grid, and crossfades each voice toward raw synth.
+  </footer>
+</div>
+<script>
+'use strict';
+/* ===== MEASURED DATA — ported verbatim from the six lab pages (themselves audited
+   against the measurements JSONs in analysis/). Do not hand-edit numbers here. ===== */
+const MEAS_CARDINAL = {
+  "types": {
+    "Ua": {"name":"First upslur","n":4,"durMed":0.374,"durMin":0.352,"durMax":0.401,
+      "fStart":2131.8,"fEnd":3100.8,"gridDur":0.4018,"harm2":0.002,"peak":0.342,"voice":1,
+      "contour":[2002.6, 2088.7, 2174.9, 2282.5, 2347.1, 2397.4, 2454.8, 2551.0, 2706.0, 2863.9, 3000.3, 3050.5, 3100.8, 3082.1, 3100.8, 3100.8],
+      "amp":[0.1607, 0.1599, 0.2992, 0.283, 0.3747, 0.4442, 0.4621, 0.6003, 0.6461, 0.5375, 0.6622, 0.7611, 0.571, 0.114, 0.1081, 0.072]},
+    "Ub": {"name":"Second upslur","n":4,"durMed":0.466,"durMin":0.463,"durMax":0.536,
+      "fStart":1830.3,"fEnd":3079.2,"gridDur":0.4018,"harm2":0.003,"peak":0.46,"voice":1,
+      "contour":[1679.6, 1771.5, 1899.2, 1998.3, 2110.3, 2203.6, 2304.1, 2394.5, 2476.3, 2627.1, 2842.4, 3014.6, 3100.8, 3072.1, 3057.7, 3079.2],
+      "amp":[0.1195, 0.1958, 0.2102, 0.2966, 0.2828, 0.439, 0.4252, 0.4426, 0.7145, 0.8424, 0.558, 0.6289, 0.4348, 0.1929, 0.0677, 0.0538]},
+    "D": {"name":"Downslur","n":16,"durMed":0.165,"durMin":0.142,"durMax":0.184,
+      "fStart":2239.5,"fEnd":1625.8,"gridDur":0.1339,"harm2":0.009,"peak":0.282,"voice":0,
+      "contour":[2368.7, 2296.9, 2174.9, 2067.2, 2024.1, 1938.0, 1890.6, 1851.9, 1808.8, 1765.7, 1729.8, 1716.9, 1679.6, 1636.5, 1593.5, 1550.4],
+      "amp":[0.1957, 0.7107, 0.7703, 0.738, 0.6721, 0.5343, 0.5216, 0.4946, 0.4846, 0.4033, 0.3242, 0.2301, 0.1866, 0.1416, 0.0859, 0.0876]},
+    "C": {"name":"High chip","n":17,"durMed":0.091,"durMin":0.063,"durMax":0.128,
+      "fStart":4199.0,"fEnd":1679.6,"gridDur":0.1339,"harm2":0.013,"peak":0.207,"voice":1,
+      "contour":[4565.0, 4292.3, 4134.4, 4005.2, 3789.8, 3761.1, 3746.8, 3614.7, 3574.5, 3574.5, 2713.2, 1955.2, 1782.9, 1734.1, 1653.8, 1593.5],
+      "amp":[0.2657, 0.3532, 0.5527, 0.5511, 0.6632, 0.5852, 0.6215, 0.3009, 0.2399, 0.1991, 0.3525, 0.2843, 0.24, 0.2394, 0.156, 0.1194]}
+  },
+  "grammar": {
+    "transitions": {
+      "Ua>Ub": {"min":0.641,"med":0.678,"max":0.705,"grid":0.6696},
+      "Ub>D": {"min":0.533,"med":0.564,"max":0.586,"grid":0.5357},
+      "D>D": {"min":0.331,"med":0.345,"max":0.365,"grid":0.4018},
+      "D>C": {"min":0.381,"med":0.381,"max":0.381,"grid":0.4018},
+      "C>C": {"min":0.245,"med":0.299,"max":0.39,"grid":0.2679}
+    },
+    "boutPause":[4.067,4.73,5.129], "gridBoutPause":4.286,
+    "forms":{"A":0.6,"B":0.2,"C":0.2},
+    "aRun":[4,5,6], "bRun":7, "cRun":10
+  }
+};
+
+const MEAS_OWL = {
+  "types": {
+    "P1": {"name":"Hoot 1 — the knock","n":2,"durMed":0.144,"durMin":0.142,"durMax":0.147,
+      "fStart":323.0,"fEnd":317.6,"gridDur":0.1339,"harm2":0.03,"harm3":0.014,"peak":0.245,"voice":1,
+      "contour":[312.2, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 316.5, 312.2],
+      "amp":[0.5312, 0.7874, 0.7998, 0.8827, 0.944, 0.7711, 0.4591, 0.1686, 0.1673, 0.2063, 0.3264, 0.3038, 0.1691, 0.275, 0.4172, 0.3012]},
+    "P2": {"name":"Hoot 2","n":2,"durMed":0.377,"durMin":0.375,"durMax":0.379,
+      "fStart":323.0,"fEnd":323.0,"gridDur":0.4018,"harm2":0.021,"harm3":0.004,"peak":0.406,"voice":1,
+      "contour":[312.2, 318.7, 323.0, 312.2, 319.1, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 320.8, 323.0, 323.0, 318.7, 312.2],
+      "amp":[0.3196, 0.5578, 0.5197, 0.1837, 0.4861, 0.5809, 0.8181, 0.6235, 0.8844, 0.7514, 0.7803, 0.2437, 0.409, 0.211, 0.3066, 0.1801]},
+    "P3": {"name":"Hoot 3 — the long one","n":2,"durMed":0.465,"durMin":0.463,"durMax":0.466,
+      "fStart":323.0,"fEnd":306.8,"gridDur":0.4018,"harm2":0.025,"harm3":0.004,"peak":0.415,"voice":1,
+      "contour":[306.8, 317.6, 323.0, 323.0, 317.6, 323.0, 323.0, 317.6, 321.9, 312.2, 312.2, 312.2, 307.9, 315.1, 301.5, 301.5],
+      "amp":[0.3138, 0.5874, 0.7725, 0.632, 0.6498, 0.7939, 0.6318, 0.4994, 0.5736, 0.4772, 0.5428, 0.4233, 0.2491, 0.2607, 0.1425, 0.1768]},
+    "P4": {"name":"Hoot 4 — the closer","n":2,"durMed":0.397,"durMin":0.392,"durMax":0.402,
+      "fStart":323.0,"fEnd":312.2,"gridDur":0.4018,"harm2":0.019,"harm3":0.004,"peak":0.46,"voice":1,
+      "contour":[312.2, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 323.0, 312.2, 310.4, 317.6, 317.6, 312.2, 317.6, 306.8],
+      "amp":[0.2844, 0.5376, 0.6348, 0.6409, 0.9703, 0.8902, 0.9336, 0.8299, 0.676, 0.4201, 0.3118, 0.3173, 0.2684, 0.2538, 0.1297, 0.1602]}
+  },
+  "grammar": {
+    "transitions": {
+      "P1>P2": {"min":0.339,"med":0.34,"max":0.342,"grid":0.4018},
+      "P2>P3": {"min":1.052,"med":1.052,"max":1.052,"grid":1.0714},
+      "P3>P4": {"min":0.752,"med":0.752,"max":0.753,"grid":0.8036}
+    },
+    "seriesPause":[27.465,27.465,27.465], "gridSeriesPause":4.286
+  }
+};
+
+const MEAS_THRUSH = {
+ "types": {
+  "W": {
+   "name": "Lead whistle",
+   "n": 3,
+   "durMed": 0.279,
+   "durMin": 0.182,
+   "durMax": 0.455,
+   "fStart": 4359.375,
+   "fEnd": 4359.375,
+   "gridDur": 0.268,
+   "harm2": 0.001,
+   "harm3": 0.0,
+   "peakRel": 0.417,
+   "voice": 1,
+   "tremRate": 15.95,
+   "tremDepth": 0.361,
+   "contour": [
+    4359.4,
+    4359.4,
+    4359.4,
+    4640.6,
+    4640.6,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4359.4,
+    4640.6,
+    4359.4,
+    4359.4,
+    4359.4
+   ],
+   "amp": [
+    0.1201,
+    0.1953,
+    0.3749,
+    0.3765,
+    0.4159,
+    0.4527,
+    0.7436,
+    0.7244,
+    0.652,
+    0.8743,
+    0.7948,
+    0.3806,
+    0.29,
+    0.2296,
+    0.1057,
+    0.0538
+   ]
+  },
+  "S": {
+   "name": "Sustained flute",
+   "n": 7,
+   "durMed": 0.362,
+   "durMin": 0.303,
+   "durMax": 0.519,
+   "fStart": 3585.938,
+   "fEnd": 3445.312,
+   "gridDur": 0.335,
+   "harm2": 0.001,
+   "harm3": 0.0,
+   "peakRel": 0.258,
+   "voice": 0,
+   "tremRate": 10.3,
+   "tremDepth": 0.364,
+   "contour": [
+    4265.6,
+    3984.4,
+    3515.6,
+    3187.5,
+    3375.0,
+    2953.1,
+    2906.2,
+    2906.2,
+    2906.2,
+    3328.1,
+    3140.6,
+    3140.6,
+    3778.1,
+    3234.4,
+    3459.4,
+    3140.6
+   ],
+   "amp": [
+    0.1934,
+    0.2089,
+    0.3588,
+    0.4732,
+    0.3435,
+    0.3598,
+    0.3391,
+    0.275,
+    0.2496,
+    0.2621,
+    0.4778,
+    0.2163,
+    0.3246,
+    0.2402,
+    0.0741,
+    0.0882
+   ]
+  },
+  "U": {
+   "name": "Up-slur flute",
+   "n": 4,
+   "durMed": 0.423,
+   "durMin": 0.27,
+   "durMax": 0.592,
+   "fStart": 3281.25,
+   "fEnd": 3773.438,
+   "gridDur": 0.402,
+   "harm2": 0.002,
+   "harm3": 0.0,
+   "peakRel": 0.37,
+   "voice": 1,
+   "tremRate": 14.35,
+   "tremDepth": 0.371,
+   "contour": [
+    3234.4,
+    3445.3,
+    3318.8,
+    3257.8,
+    3421.9,
+    3750.0,
+    3539.1,
+    3796.9,
+    3378.1,
+    3421.9,
+    3187.5,
+    3187.5,
+    3539.1,
+    3164.1,
+    3473.4,
+    3210.9
+   ],
+   "amp": [
+    0.1404,
+    0.2785,
+    0.3162,
+    0.5498,
+    0.4207,
+    0.5224,
+    0.1732,
+    0.2583,
+    0.2936,
+    0.3811,
+    0.5372,
+    0.4905,
+    0.2974,
+    0.3553,
+    0.0947,
+    0.0634
+   ]
+  },
+  "D": {
+   "name": "Down-slur flute",
+   "n": 5,
+   "durMed": 0.459,
+   "durMin": 0.306,
+   "durMax": 0.978,
+   "fStart": 3843.75,
+   "fEnd": 2859.375,
+   "gridDur": 0.469,
+   "harm2": 0.002,
+   "harm3": 0.0,
+   "peakRel": 0.151,
+   "voice": 0,
+   "tremRate": 9.8,
+   "tremDepth": 0.329,
+   "contour": [
+    3515.6,
+    3843.8,
+    3890.6,
+    4453.1,
+    3684.4,
+    3562.5,
+    3778.1,
+    3337.5,
+    2906.2,
+    2906.2,
+    4390.6,
+    4218.8,
+    3750.0,
+    2918.7,
+    2837.5,
+    3656.2
+   ],
+   "amp": [
+    0.3326,
+    0.5161,
+    0.33,
+    0.3574,
+    0.3075,
+    0.1858,
+    0.2686,
+    0.2435,
+    0.5433,
+    0.2182,
+    0.3699,
+    0.3478,
+    0.265,
+    0.2179,
+    0.2779,
+    0.151
+   ]
+  },
+  "C": {
+   "name": "Chip",
+   "n": 5,
+   "durMed": 0.045,
+   "durMin": 0.036,
+   "durMax": 0.074,
+   "fStart": 5976.562,
+   "fEnd": 5953.125,
+   "gridDur": 0.067,
+   "harm2": 0.0,
+   "harm3": 0.0,
+   "peakRel": 0.075,
+   "voice": 1,
+   "tremRate": 0,
+   "tremDepth": 0,
+   "contour": [
+    6000.0,
+    5981.2,
+    5915.6,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5906.2,
+    5950.0,
+    5953.1
+   ],
+   "amp": [
+    0.5368,
+    0.5914,
+    0.8139,
+    0.8764,
+    0.7893,
+    0.4196,
+    0.4362,
+    0.3675,
+    0.5153,
+    0.6509,
+    0.6149,
+    0.677,
+    0.5961,
+    0.5678,
+    0.4557,
+    0.2411
+   ]
+  },
+  "u": {
+   "name": "Short up-chirp",
+   "n": 3,
+   "durMed": 0.11,
+   "durMin": 0.095,
+   "durMax": 0.128,
+   "fStart": 3703.125,
+   "fEnd": 4359.375,
+   "gridDur": 0.134,
+   "harm2": 0.002,
+   "harm3": 0.0,
+   "peakRel": 0.103,
+   "voice": 1,
+   "tremRate": 0,
+   "tremDepth": 0,
+   "contour": [
+    3281.2,
+    3390.6,
+    3750.0,
+    3656.2,
+    3609.4,
+    3265.6,
+    3328.1,
+    3796.9,
+    3796.9,
+    3796.9,
+    3703.1,
+    4071.9,
+    4106.3,
+    4359.4,
+    4312.5,
+    4359.4
+   ],
+   "amp": [
+    0.3409,
+    0.1554,
+    0.2552,
+    0.2207,
+    0.2067,
+    0.8919,
+    0.5737,
+    0.4848,
+    0.3942,
+    0.2949,
+    0.1652,
+    0.271,
+    0.1905,
+    0.1884,
+    0.166,
+    0.1534
+   ]
+  },
+  "d": {
+   "name": "Short down-chirp",
+   "n": 2,
+   "durMed": 0.089,
+   "durMin": 0.082,
+   "durMax": 0.096,
+   "fStart": 3257.812,
+   "fEnd": 2707.031,
+   "gridDur": 0.067,
+   "harm2": 0.004,
+   "harm3": 0.0,
+   "peakRel": 0.162,
+   "voice": 0,
+   "tremRate": 0,
+   "tremDepth": 0,
+   "contour": [
+    3234.4,
+    3257.8,
+    3773.4,
+    3773.4,
+    3796.9,
+    3796.9,
+    3539.1,
+    3390.6,
+    3156.2,
+    3023.4,
+    2765.6,
+    2718.8,
+    2695.3,
+    2718.8,
+    2718.8,
+    2671.9
+   ],
+   "amp": [
+    0.1761,
+    0.1241,
+    0.1418,
+    0.1592,
+    0.2005,
+    0.2566,
+    0.6276,
+    0.6004,
+    0.274,
+    0.2493,
+    0.1715,
+    0.1204,
+    0.1173,
+    0.1112,
+    0.0913,
+    0.0787
+   ]
+  }
+ },
+ "grammar": {
+  "transitions": {
+   "C>C": {
+    "min": 0.209,
+    "med": 0.209,
+    "max": 0.209,
+    "grid": 0.201
+   },
+   "C>S": {
+    "min": 0.153,
+    "med": 0.377,
+    "max": 0.601,
+    "grid": 0.402
+   },
+   "C>U": {
+    "min": 0.35,
+    "med": 0.35,
+    "max": 0.35,
+    "grid": 0.335
+   },
+   "C>u": {
+    "min": 0.152,
+    "med": 0.152,
+    "max": 0.152,
+    "grid": 0.134
+   },
+   "D>C": {
+    "min": 0.444,
+    "med": 0.444,
+    "max": 0.444,
+    "grid": 0.469
+   },
+   "S>D": {
+    "min": 0.342,
+    "med": 0.371,
+    "max": 0.4,
+    "grid": 0.402
+   },
+   "S>S": {
+    "min": 0.421,
+    "med": 0.677,
+    "max": 0.932,
+    "grid": 0.67
+   },
+   "S>u": {
+    "min": 0.567,
+    "med": 0.567,
+    "max": 0.567,
+    "grid": 0.536
+   },
+   "U>S": {
+    "min": 0.3,
+    "med": 0.552,
+    "max": 0.668,
+    "grid": 0.536
+   },
+   "W>D": {
+    "min": 0.312,
+    "med": 0.312,
+    "max": 0.312,
+    "grid": 0.335
+   },
+   "W>U": {
+    "min": 0.221,
+    "med": 0.364,
+    "max": 0.507,
+    "grid": 0.335
+   },
+   "d>u": {
+    "min": 0.154,
+    "med": 0.154,
+    "max": 0.154,
+    "grid": 0.134
+   },
+   "u>D": {
+    "min": 0.145,
+    "med": 0.145,
+    "max": 0.145,
+    "grid": 0.134
+   },
+   "u>d": {
+    "min": 0.156,
+    "med": 0.158,
+    "max": 0.16,
+    "grid": 0.134
+   }
+  },
+  "songPause": [
+   1.391,
+   4.271,
+   5.979
+  ],
+  "gridSongPause": 4.286,
+  "forms": [
+   [
+    {
+     "t": "C",
+     "s": 1.1905
+    },
+    {
+     "t": "C",
+     "s": 0.8492
+    },
+    {
+     "t": "S",
+     "s": 1.0073
+    },
+    {
+     "t": "u",
+     "s": 1.0062
+    },
+    {
+     "t": "d",
+     "s": 1.0269
+    },
+    {
+     "t": "u",
+     "s": 0.9814
+    },
+    {
+     "t": "d",
+     "s": 1.0122
+    }
+   ],
+   [
+    {
+     "t": "C",
+     "s": 1.0
+    },
+    {
+     "t": "u",
+     "s": 1.3789
+    },
+    {
+     "t": "D",
+     "s": 1.3346
+    },
+    {
+     "t": "C",
+     "s": 0.873
+    },
+    {
+     "t": "U",
+     "s": 0.7169
+    },
+    {
+     "t": "S",
+     "s": 0.8613
+    }
+   ],
+   [
+    {
+     "t": "W",
+     "s": 0.9462
+    },
+    {
+     "t": "U",
+     "s": 1.0202
+    }
+   ],
+   [
+    {
+     "t": "D",
+     "s": 1.1367
+    }
+   ],
+   [
+    {
+     "t": "U",
+     "s": 1.1305
+    },
+    {
+     "t": "S",
+     "s": 1.1679
+    },
+    {
+     "t": "D",
+     "s": 0.7918
+    }
+   ],
+   [
+    {
+     "t": "C",
+     "s": 1.0953
+    },
+    {
+     "t": "S",
+     "s": 1.5036
+    },
+    {
+     "t": "S",
+     "s": 1.2263
+    },
+    {
+     "t": "S",
+     "s": 0.8467
+    },
+    {
+     "t": "D",
+     "s": 0.8557
+    }
+   ],
+   [
+    {
+     "t": "W",
+     "s": 1.1183
+    },
+    {
+     "t": "U",
+     "s": 1.1856
+    },
+    {
+     "t": "S",
+     "s": 1.0657
+    }
+   ],
+   [
+    {
+     "t": "W",
+     "s": 1.0
+    },
+    {
+     "t": "D",
+     "s": 0.9195
+    }
+   ]
+  ]
+ },
+ "ladder": [
+  3234.4,
+  2765.6,
+  3796.9,
+  4171.9,
+  3750.0,
+  3539.1,
+  3726.6,
+  3867.2
+ ],
+ "tremoloOverall": {
+  "rateMed": 11.05,
+  "depthMed": 0.802
+ }
+};
+
+const MEAS_WREN = {
+  "types": {
+    "D": {
+      "name": "Down-chip",
+      "n": 16,
+      "durMed": 0.038,
+      "durMin": 0.028,
+      "durMax": 0.058,
+      "fStart": 2627.1,
+      "fEnd": 2002.6,
+      "gridDur": 0.1339,
+      "harm2": 0.039,
+      "harm3": 0.001,
+      "peak": 0.12,
+      "voice": 0,
+      "contour": [
+        2584.0,
+        2627.1,
+        2638.5,
+        2670.1,
+        2670.1,
+        2670.1,
+        2713.2,
+        2726.1,
+        2697.4,
+        2532.3,
+        2325.6,
+        2282.5,
+        2174.9,
+        2074.4,
+        2014.1,
+        1981.1
+      ],
+      "amp": [
+        0.525,
+        0.6953,
+        0.8722,
+        0.9571,
+        0.8206,
+        0.548,
+        0.4921,
+        0.5368,
+        0.5323,
+        0.5578,
+        0.5592,
+        0.3768,
+        0.3296,
+        0.2847,
+        0.2788,
+        0.2372
+      ]
+    },
+    "U": {
+      "name": "Up-chirp",
+      "n": 18,
+      "durMed": 0.051,
+      "durMin": 0.034,
+      "durMax": 0.073,
+      "fStart": 2885.4,
+      "fEnd": 3143.8,
+      "gridDur": 0.1339,
+      "harm2": 0.009,
+      "harm3": 0.001,
+      "peak": 0.235,
+      "voice": 1,
+      "contour": [
+        2863.9,
+        2885.4,
+        2885.4,
+        2889.8,
+        2935.7,
+        2985.9,
+        3031.9,
+        3067.8,
+        3100.8,
+        3143.8,
+        3143.8,
+        3143.8,
+        3143.8,
+        3143.8,
+        3143.8,
+        3143.8
+      ],
+      "amp": [
+        0.2685,
+        0.3858,
+        0.4711,
+        0.5835,
+        0.6876,
+        0.8311,
+        0.9246,
+        0.8434,
+        0.7276,
+        0.6209,
+        0.4723,
+        0.2412,
+        0.239,
+        0.1462,
+        0.1076,
+        0.1208
+      ]
+    },
+    "L": {
+      "name": "Long ringing syllable",
+      "n": 20,
+      "durMed": 0.216,
+      "durMin": 0.131,
+      "durMax": 0.296,
+      "fStart": 3143.8,
+      "fEnd": 2540.9,
+      "gridDur": 0.2679,
+      "harm2": 0.008,
+      "harm3": 0.003,
+      "peak": 0.258,
+      "voice": 0,
+      "contour": [
+        2971.6,
+        3064.9,
+        3230.0,
+        3230.0,
+        3423.8,
+        3876.0,
+        4483.2,
+        3703.7,
+        3919.0,
+        3876.0,
+        5254.1,
+        4886.6,
+        3768.3,
+        2730.4,
+        2304.1,
+        2002.6
+      ],
+      "amp": [
+        0.2459,
+        0.7715,
+        0.2648,
+        0.1202,
+        0.0944,
+        0.3385,
+        0.1977,
+        0.3963,
+        0.3287,
+        0.1461,
+        0.1502,
+        0.1534,
+        0.1969,
+        0.3359,
+        0.1542,
+        0.1102
+      ]
+    },
+    "S": {
+      "name": "Short high fragment",
+      "n": 16,
+      "durMed": 0.035,
+      "durMin": 0.021,
+      "durMax": 0.091,
+      "fStart": 3574.5,
+      "fEnd": 4565.0,
+      "gridDur": 0.1339,
+      "harm2": 0.007,
+      "harm3": 0.002,
+      "peak": 0.151,
+      "voice": 1,
+      "contour": [
+        3553.0,
+        3584.6,
+        3616.1,
+        3686.5,
+        3722.4,
+        3919.0,
+        3768.3,
+        3789.8,
+        3789.8,
+        3850.1,
+        3976.5,
+        4450.2,
+        4586.6,
+        4586.6,
+        4585.1,
+        4565.0
+      ],
+      "amp": [
+        0.427,
+        0.5754,
+        0.7218,
+        0.8855,
+        0.6891,
+        0.6206,
+        0.5818,
+        0.498,
+        0.3508,
+        0.3241,
+        0.3425,
+        0.3078,
+        0.2763,
+        0.2633,
+        0.2063,
+        0.1941
+      ]
+    }
+  },
+  "grammar": {
+    "transitions": {
+      "D>L": {
+        "min": 0.072,
+        "med": 0.074,
+        "max": 0.077,
+        "grid": 0.1339
+      },
+      "D>U": {
+        "min": 0.072,
+        "med": 0.077,
+        "max": 0.08,
+        "grid": 0.1339
+      },
+      "L>D": {
+        "min": 0.152,
+        "med": 0.159,
+        "max": 0.238,
+        "grid": 0.1339
+      },
+      "L>L": {
+        "min": 0.225,
+        "med": 0.313,
+        "max": 0.318,
+        "grid": 0.2679
+      },
+      "L>S": {
+        "min": 0.237,
+        "med": 0.24,
+        "max": 0.322,
+        "grid": 0.2679
+      },
+      "L>U": {
+        "min": 0.227,
+        "med": 0.271,
+        "max": 0.321,
+        "grid": 0.2679
+      },
+      "S>D": {
+        "min": 0.061,
+        "med": 0.114,
+        "max": 0.117,
+        "grid": 0.1339
+      },
+      "S>S": {
+        "min": 0.041,
+        "med": 0.046,
+        "max": 0.051,
+        "grid": 0.1339
+      },
+      "S>U": {
+        "min": 0.071,
+        "med": 0.072,
+        "max": 0.074,
+        "grid": 0.1339
+      },
+      "U>L": {
+        "min": 0.082,
+        "med": 0.085,
+        "max": 0.091,
+        "grid": 0.1339
+      },
+      "U>S": {
+        "min": 0.085,
+        "med": 0.087,
+        "max": 0.131,
+        "grid": 0.1339
+      }
+    },
+    "boutPause": [
+      3.484,
+      3.526,
+      3.905
+    ],
+    "gridBoutPause": 3.75,
+    "sequences": [
+      [
+        "S",
+        "D",
+        "U",
+        "L",
+        "D",
+        "U",
+        "L",
+        "L",
+        "L",
+        "S",
+        "U"
+      ],
+      [
+        "S",
+        "D",
+        "U",
+        "S",
+        "S",
+        "S",
+        "D",
+        "L",
+        "L",
+        "D",
+        "L",
+        "S"
+      ],
+      [
+        "D",
+        "U",
+        "S",
+        "S",
+        "D",
+        "L",
+        "L",
+        "L",
+        "U"
+      ],
+      [
+        "D",
+        "U",
+        "S",
+        "S",
+        "D",
+        "L",
+        "U",
+        "L",
+        "U",
+        "L",
+        "U",
+        "L",
+        "U"
+      ],
+      [
+        "D",
+        "U",
+        "S",
+        "S",
+        "D",
+        "U",
+        "L",
+        "D",
+        "L",
+        "D",
+        "U",
+        "L",
+        "S"
+      ],
+      [
+        "S",
+        "U",
+        "S",
+        "D",
+        "L",
+        "U",
+        "L",
+        "D",
+        "U",
+        "L",
+        "D",
+        "U"
+      ]
+    ],
+    "fallback": {
+      "min": 0.041,
+      "med": 0.132,
+      "max": 0.322,
+      "grid": 0.1339
+    }
+  }
+};
+
+const MEAS_SPARROW = {
+  "types": {
+    "P": {
+      "name": "Pre-intro ticks",
+      "n": 5,
+      "durMed": 0.027,
+      "durMin": 0.021,
+      "durMax": 0.043,
+      "fStart": 4875.0,
+      "fEnd": 6281.2,
+      "gridDur": 0.067,
+      "harm2": 0.003,
+      "peakRel": 0.081,
+      "voice": 1,
+      "contour": [
+        4875.0,
+        4903.1,
+        5015.6,
+        5203.1,
+        5203.1,
+        5203.1,
+        5203.1,
+        5315.6,
+        5512.5,
+        5840.6,
+        6234.4,
+        5953.1,
+        6018.8,
+        6215.6,
+        6281.2,
+        6281.2
+      ],
+      "amp": [
+        0.7777,
+        0.7465,
+        0.7209,
+        0.7762,
+        0.9137,
+        0.7942,
+        0.8192,
+        0.6102,
+        0.6298,
+        0.7182,
+        0.5963,
+        0.5916,
+        0.5084,
+        0.3972,
+        0.35,
+        0.3505
+      ]
+    },
+    "I": {
+      "name": "Intro whistle",
+      "n": 8,
+      "durMed": 0.19,
+      "durMin": 0.18,
+      "durMax": 0.207,
+      "fStart": 2437.5,
+      "fEnd": 2437.5,
+      "gridDur": 0.268,
+      "harm2": 0.035,
+      "peakRel": 0.139,
+      "voice": 0,
+      "contour": [
+        2437.5,
+        2437.5,
+        2414.1,
+        2404.7,
+        2390.6,
+        2414.1,
+        2414.1,
+        2418.8,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2437.5,
+        2460.9
+      ],
+      "amp": [
+        0.4548,
+        0.82,
+        0.9632,
+        0.9449,
+        0.9572,
+        0.9041,
+        0.8197,
+        0.7741,
+        0.7795,
+        0.693,
+        0.6684,
+        0.5845,
+        0.515,
+        0.4383,
+        0.3499,
+        0.2044
+      ]
+    },
+    "B": {
+      "name": "Buzz",
+      "n": 4,
+      "durMed": 0.508,
+      "durMin": 0.48,
+      "durMax": 0.528,
+      "fStart": 3867.2,
+      "fEnd": 3843.8,
+      "gridDur": 0.536,
+      "harm2": 0.008,
+      "peakRel": 0.352,
+      "voice": 0,
+      "contour": [
+        3773.4,
+        3875.0,
+        3875.0,
+        3890.6,
+        3904.7,
+        3867.2,
+        3895.3,
+        3890.6,
+        3825.0,
+        3843.8,
+        3867.2,
+        3820.3,
+        3825.0,
+        3878.1,
+        3867.2,
+        3796.9
+      ],
+      "amp": [
+        0.1806,
+        0.5369,
+        0.6302,
+        0.5929,
+        0.5437,
+        0.4736,
+        0.473,
+        0.4676,
+        0.4339,
+        0.4336,
+        0.6152,
+        0.4088,
+        0.5005,
+        0.3887,
+        0.3851,
+        0.0816
+      ]
+    },
+    "L": {
+      "name": "Low upslur",
+      "n": 11,
+      "durMed": 0.057,
+      "durMin": 0.049,
+      "durMax": 0.062,
+      "fStart": 2109.4,
+      "fEnd": 3000.0,
+      "gridDur": 0.134,
+      "harm2": 0.014,
+      "peakRel": 0.627,
+      "voice": 0,
+      "contour": [
+        2109.4,
+        2109.4,
+        2109.4,
+        2109.4,
+        2146.9,
+        2156.2,
+        3028.1,
+        3468.8,
+        3409.4,
+        3365.6,
+        3296.9,
+        3206.2,
+        3084.4,
+        3040.6,
+        2984.4,
+        2953.1
+      ],
+      "amp": [
+        0.101,
+        0.0903,
+        0.0818,
+        0.0727,
+        0.0583,
+        0.0338,
+        0.0258,
+        0.0717,
+        0.2175,
+        0.4971,
+        0.9068,
+        0.9205,
+        0.5742,
+        0.1046,
+        0.0876,
+        0.0456
+      ]
+    },
+    "H": {
+      "name": "High downslur",
+      "n": 5,
+      "durMed": 0.104,
+      "durMin": 0.1,
+      "durMax": 0.107,
+      "fStart": 6843.8,
+      "fEnd": 5320.3,
+      "gridDur": 0.268,
+      "harm2": 0.002,
+      "peakRel": 0.802,
+      "voice": 1,
+      "contour": [
+        6187.5,
+        6403.1,
+        7456.2,
+        7528.1,
+        7546.9,
+        7546.9,
+        7546.9,
+        7534.4,
+        4593.8,
+        4593.8,
+        4562.5,
+        4640.6,
+        5700.0,
+        5493.7,
+        5228.1,
+        4734.4
+      ],
+      "amp": [
+        0.0801,
+        0.5465,
+        0.367,
+        0.4369,
+        0.4249,
+        0.2389,
+        0.0378,
+        0.0326,
+        0.1091,
+        0.5403,
+        0.676,
+        0.2218,
+        0.5653,
+        0.8522,
+        0.0779,
+        0.0355
+      ]
+    },
+    "h": {
+      "name": "High chirp",
+      "n": 7,
+      "durMed": 0.037,
+      "durMin": 0.036,
+      "durMax": 0.041,
+      "fStart": 6234.4,
+      "fEnd": 7593.8,
+      "gridDur": 0.134,
+      "harm2": 0.0,
+      "peakRel": 0.501,
+      "voice": 1,
+      "contour": [
+        6234.4,
+        6234.4,
+        6234.4,
+        6328.1,
+        6421.9,
+        7140.6,
+        7462.5,
+        7500.0,
+        7518.8,
+        7546.9,
+        7546.9,
+        7546.9,
+        7565.6,
+        7593.8,
+        7593.8,
+        7593.8
+      ],
+      "amp": [
+        0.1274,
+        0.8273,
+        0.8826,
+        0.3347,
+        0.162,
+        0.1445,
+        0.1547,
+        0.1608,
+        0.1789,
+        0.1877,
+        0.1793,
+        0.2027,
+        0.191,
+        0.1827,
+        0.1185,
+        0.0578
+      ]
+    },
+    "M": {
+      "name": "Mid note",
+      "n": 7,
+      "durMed": 0.05,
+      "durMin": 0.044,
+      "durMax": 0.056,
+      "fStart": 4593.8,
+      "fEnd": 4898.4,
+      "gridDur": 0.134,
+      "harm2": 0.003,
+      "peakRel": 0.486,
+      "voice": 1,
+      "contour": [
+        4593.8,
+        4593.8,
+        4593.8,
+        4593.8,
+        4534.4,
+        4359.4,
+        4593.8,
+        5628.1,
+        5718.8,
+        5662.5,
+        5546.9,
+        5462.5,
+        5343.8,
+        5181.2,
+        4778.1,
+        4500.0
+      ],
+      "amp": [
+        0.1305,
+        0.2822,
+        0.4962,
+        0.7891,
+        0.7491,
+        0.4569,
+        0.2538,
+        0.3493,
+        0.5556,
+        0.8538,
+        0.9859,
+        0.8062,
+        0.3858,
+        0.0696,
+        0.064,
+        0.0586
+      ]
+    },
+    "C": {
+      "name": "Chip",
+      "n": 7,
+      "durMed": 0.029,
+      "durMin": 0.028,
+      "durMax": 0.044,
+      "fStart": 3421.9,
+      "fEnd": 2976.6,
+      "gridDur": 0.134,
+      "harm2": 0.009,
+      "peakRel": 0.513,
+      "voice": 0,
+      "contour": [
+        3421.9,
+        3421.9,
+        3400.0,
+        3365.6,
+        3328.1,
+        3296.9,
+        3262.5,
+        3215.6,
+        3153.1,
+        3112.5,
+        3093.8,
+        3078.1,
+        3046.9,
+        3000.0,
+        2984.4,
+        2953.1
+      ],
+      "amp": [
+        0.1237,
+        0.2445,
+        0.378,
+        0.5616,
+        0.7741,
+        0.9656,
+        0.9788,
+        0.8365,
+        0.6896,
+        0.6092,
+        0.3939,
+        0.1752,
+        0.1137,
+        0.1005,
+        0.1079,
+        0.0554
+      ]
+    },
+    "T": {
+      "name": "Terminal high",
+      "n": 3,
+      "durMed": 0.121,
+      "durMin": 0.109,
+      "durMax": 0.176,
+      "fStart": 7593.8,
+      "fEnd": 7593.8,
+      "gridDur": 0.268,
+      "harm2": 0.007,
+      "peakRel": 0.078,
+      "voice": 1,
+      "contour": [
+        7546.9,
+        7593.8,
+        7593.8,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        7640.6,
+        5015.6,
+        7593.8,
+        7593.8,
+        7593.8
+      ],
+      "amp": [
+        0.8133,
+        0.8176,
+        0.807,
+        0.846,
+        0.6729,
+        0.5672,
+        0.5769,
+        0.5699,
+        0.6091,
+        0.6704,
+        0.6833,
+        0.4957,
+        0.5257,
+        0.3917,
+        0.4278,
+        0.3674
+      ]
+    },
+    "E": {
+      "name": "End note",
+      "n": 2,
+      "durMed": 0.049,
+      "durMin": 0.049,
+      "durMax": 0.049,
+      "fStart": 4476.6,
+      "fEnd": 4406.2,
+      "gridDur": 0.134,
+      "harm2": 0.008,
+      "peakRel": 0.608,
+      "voice": 1,
+      "contour": [
+        4453.1,
+        4473.4,
+        4453.1,
+        4467.2,
+        4476.6,
+        4453.1,
+        4453.1,
+        4453.1,
+        4451.6,
+        4410.9,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2,
+        4406.2
+      ],
+      "amp": [
+        0.105,
+        0.348,
+        0.2838,
+        0.479,
+        0.6852,
+        0.8326,
+        0.9389,
+        0.9919,
+        0.9894,
+        0.9363,
+        0.8294,
+        0.7045,
+        0.5286,
+        0.3324,
+        0.1599,
+        0.0473
+      ]
+    },
+    "W": {
+      "name": "Flat chip",
+      "n": 4,
+      "durMed": 0.068,
+      "durMin": 0.034,
+      "durMax": 0.114,
+      "fStart": 3585.9,
+      "fEnd": 3492.2,
+      "gridDur": 0.134,
+      "harm2": 0.004,
+      "peakRel": 0.091,
+      "voice": 0,
+      "contour": [
+        3585.9,
+        3585.9,
+        3585.9,
+        3548.4,
+        3492.2,
+        3492.2,
+        3492.2,
+        3482.8,
+        3492.2,
+        3468.8,
+        3476.6,
+        3492.2,
+        3492.2,
+        3492.2,
+        3492.2,
+        3468.8
+      ],
+      "amp": [
+        0.6915,
+        0.7331,
+        0.5799,
+        0.6134,
+        0.657,
+        0.7221,
+        0.8363,
+        0.9569,
+        0.8599,
+        0.735,
+        0.8147,
+        0.7086,
+        0.5617,
+        0.4397,
+        0.4202,
+        0.3105
+      ]
+    }
+  },
+  "grammar": {
+    "transitions": {
+      "B>C": {
+        "min": 0.609,
+        "med": 0.609,
+        "max": 0.609,
+        "grid": 0.67
+      },
+      "B>L": {
+        "min": 0.553,
+        "med": 0.593,
+        "max": 0.599,
+        "grid": 0.67
+      },
+      "C>H": {
+        "min": 0.056,
+        "med": 0.056,
+        "max": 0.056,
+        "grid": 0.268
+      },
+      "C>T": {
+        "min": 0.12,
+        "med": 0.122,
+        "max": 0.125,
+        "grid": 0.268
+      },
+      "C>W": {
+        "min": 0.275,
+        "med": 0.275,
+        "max": 0.275,
+        "grid": 0.268
+      },
+      "E>W": {
+        "min": 0.533,
+        "med": 0.533,
+        "max": 0.533,
+        "grid": 0.268
+      },
+      "H>C": {
+        "min": 0.183,
+        "med": 0.183,
+        "max": 0.183,
+        "grid": 0.402
+      },
+      "H>L": {
+        "min": 0.143,
+        "med": 0.149,
+        "max": 0.154,
+        "grid": 0.402
+      },
+      "I>B": {
+        "min": 0.25,
+        "med": 0.259,
+        "max": 0.268,
+        "grid": 0.402
+      },
+      "I>I": {
+        "min": 0.355,
+        "med": 0.359,
+        "max": 0.374,
+        "grid": 0.402
+      },
+      "L>H": {
+        "min": 0.087,
+        "med": 0.088,
+        "max": 0.09,
+        "grid": 0.268
+      },
+      "L>T": {
+        "min": 0.141,
+        "med": 0.141,
+        "max": 0.141,
+        "grid": 0.268
+      },
+      "L>h": {
+        "min": 0.075,
+        "med": 0.082,
+        "max": 0.089,
+        "grid": 0.268
+      },
+      "M>C": {
+        "min": 0.125,
+        "med": 0.126,
+        "max": 0.129,
+        "grid": 0.268
+      },
+      "M>L": {
+        "min": 0.089,
+        "med": 0.096,
+        "max": 0.098,
+        "grid": 0.268
+      },
+      "P>I": {
+        "min": 0.135,
+        "med": 0.135,
+        "max": 0.135,
+        "grid": 0.134
+      },
+      "P>P": {
+        "min": 0.149,
+        "med": 0.151,
+        "max": 0.157,
+        "grid": 0.134
+      },
+      "T>C": {
+        "min": 0.577,
+        "med": 0.577,
+        "max": 0.577,
+        "grid": 0.402
+      },
+      "T>E": {
+        "min": 0.184,
+        "med": 0.208,
+        "max": 0.232,
+        "grid": 0.402
+      },
+      "W>C": {
+        "min": 0.331,
+        "med": 0.331,
+        "max": 0.331,
+        "grid": 0.268
+      },
+      "h>M": {
+        "min": 0.054,
+        "med": 0.055,
+        "max": 0.058,
+        "grid": 0.268
+      }
+    },
+    "songPause": [
+      7.156,
+      8.428,
+      9.666
+    ],
+    "gridSongPause": 4.286,
+    "forms": [
+      [
+        "P",
+        "P",
+        "P",
+        "P",
+        "P",
+        "I",
+        "I",
+        "B",
+        "L",
+        "H",
+        "L",
+        "H",
+        "L",
+        "H",
+        "C"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "L",
+        "h",
+        "M",
+        "C",
+        "H",
+        "L",
+        "h",
+        "M",
+        "C",
+        "T",
+        "E"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "C",
+        "H",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "C",
+        "T",
+        "E",
+        "W"
+      ],
+      [
+        "I",
+        "I",
+        "B",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "L",
+        "h",
+        "M",
+        "L",
+        "T",
+        "C",
+        "W",
+        "C"
+      ]
+    ]
+  },
+  "trill": {
+    "rateMed": 11.101,
+    "rateMin": 8.032,
+    "rateMax": 13.025,
+    "notesMin": 7.0,
+    "notesMax": 10.0,
+    "spanMed": 0.756
+  }
+};
+
+const MEAS_TOWHEE = {
+ "types": {
+  "I1": {
+   "name": "First intro \u2014 \u201cdrink\u201d",
+   "n": 14,
+   "durMed": 0.178,
+   "durMin": 0.158,
+   "durMax": 0.205,
+   "fStart": 3691.406,
+   "fEnd": 2378.906,
+   "gridDur": 0.2679,
+   "harm2": 0.013,
+   "peakAmp": 0.329,
+   "voice": 1,
+   "contour": [
+    3726.6,
+    3734.4,
+    2929.7,
+    3000.0,
+    3046.9,
+    3093.8,
+    3140.6,
+    3140.6,
+    3187.5,
+    3187.5,
+    3179.7,
+    2442.2,
+    1921.9,
+    1945.3,
+    2550.0,
+    3093.8
+   ],
+   "amp": [
+    0.1215,
+    0.4545,
+    0.454,
+    0.7205,
+    0.8865,
+    0.8661,
+    0.9011,
+    0.8936,
+    0.7875,
+    0.5949,
+    0.1835,
+    0.138,
+    0.1562,
+    0.1861,
+    0.1046,
+    0.0486
+   ]
+  },
+  "I2": {
+   "name": "Second intro",
+   "n": 14,
+   "durMed": 0.213,
+   "durMin": 0.192,
+   "durMax": 0.236,
+   "fStart": 2671.875,
+   "fEnd": 2625.0,
+   "gridDur": 0.2679,
+   "harm2": 0.01,
+   "peakAmp": 0.299,
+   "voice": 0,
+   "contour": [
+    2625.0,
+    2671.9,
+    2671.9,
+    2695.3,
+    2657.8,
+    2671.9,
+    2671.9,
+    2671.9,
+    2667.2,
+    2671.9,
+    2664.1,
+    2671.9,
+    2625.0,
+    2625.0,
+    2578.1,
+    2601.6
+   ],
+   "amp": [
+    0.1063,
+    0.362,
+    0.6427,
+    0.7213,
+    0.6811,
+    0.8524,
+    0.7412,
+    0.765,
+    0.7365,
+    0.6718,
+    0.6206,
+    0.5358,
+    0.5257,
+    0.4,
+    0.2509,
+    0.0532
+   ]
+  },
+  "TRILL": {
+   "name": "Trill \u2014 \u201cyour-tea\u201d (whole)",
+   "n": 14,
+   "durMed": 0.6,
+   "durMin": 0.483,
+   "durMax": 0.653,
+   "fStart": 4218.75,
+   "fEnd": 4078.125,
+   "gridDur": 0.5357,
+   "harm2": 0.007,
+   "peakAmp": 0.747,
+   "voice": 1,
+   "contour": [
+    2953.1,
+    4218.8,
+    4239.1,
+    4171.9,
+    4181.2,
+    4078.1,
+    4148.4,
+    4078.1,
+    4125.0,
+    4078.1,
+    4125.0,
+    4031.2,
+    4078.1,
+    4031.2,
+    4040.6,
+    4078.1
+   ],
+   "amp": [
+    0.0424,
+    0.4615,
+    0.0634,
+    0.4646,
+    0.0694,
+    0.4365,
+    0.1034,
+    0.4021,
+    0.2068,
+    0.3527,
+    0.2407,
+    0.35,
+    0.3432,
+    0.2102,
+    0.2077,
+    0.0214
+   ]
+  },
+  "TN": {
+   "name": "Trill note (single)",
+   "n": 114,
+   "durMed": 0.039,
+   "durMin": 0.009,
+   "durMax": 0.062,
+   "fStart": 4687.5,
+   "fEnd": 4125.0,
+   "gridDur": 0.0625,
+   "harm2": 0.006,
+   "peakAmp": 0.525,
+   "voice": 1,
+   "contour": [
+    4664.1,
+    4687.5,
+    4718.8,
+    4228.1,
+    4078.1,
+    4070.3,
+    4125.0,
+    4171.9,
+    4171.9,
+    4171.9,
+    4171.9,
+    4157.8,
+    4125.0,
+    4125.0,
+    4125.0,
+    4125.0
+   ],
+   "amp": [
+    0.5414,
+    0.9398,
+    0.7242,
+    0.9232,
+    0.7699,
+    0.4269,
+    0.4629,
+    0.495,
+    0.5915,
+    0.6696,
+    0.6861,
+    0.6714,
+    0.6485,
+    0.6276,
+    0.5628,
+    0.4335
+   ]
+  }
+ },
+ "grammar": {
+  "introGap": [
+   0.106,
+   0.15,
+   0.176
+  ],
+  "introTrillGap": [
+   0.054,
+   0.077,
+   0.098
+  ],
+  "songPause": [
+   3.997,
+   4.99,
+   7.325
+  ],
+  "gridIntroGap": 0.1339,
+  "gridIntroTrillGap": 0.0669,
+  "gridSongPause": 4.286,
+  "trillNotes": [
+   6.0,
+   8.0,
+   10.0
+  ],
+  "trillRate": [
+   11.96,
+   14.0,
+   18.03
+  ],
+  "gridTrillPeriod": 0.06696
+ }
+};
+
+/* ============================================================================
+   SYRINX·6 — one shared audio core, six measured voices.
+   Audio law (inherited from the lab pages, non-negotiable): per voice, the
+   breath/noise path is ONE fixed chain wired exactly once at init and shaped
+   only by scheduled gain envelopes — no per-note wiring changes anywhere in
+   this file; the master chain ends in a DynamicsCompressor limiter.
+   Per-note animation callbacks fire from inside the note-scheduling calls
+   themselves (schedule-time), never from a polling loop.
+   ========================================================================== */
+const PENTA = new Set([9,11,1,4,6]);              /* A-major pentatonic pitch classes (design choice) */
+const BREATH_REL = 0.05;                          /* breath peak cap: 5% of a note's own peak gain */
+const BODY_GAIN = 0.25;                           /* FULLNESS body layer: detuned-double gain at full knob */
+const ROOM_WET_MAX = 0.35;                        /* FULLNESS room send: wet gain at full knob */
+const THRUSH_GAIN_SCALE = 0.6;                    /* thrush: measured peakRel -> note peak gain (from its lab page) */
+const FALLBACK_TR = {min:0.10, med:0.15, max:0.20, grid:0.268}; /* crash-guard only; measured forms never need it */
+
+const lerp = (a,b,t)=>a+(b-a)*t;
+const clamp01 = v=>Math.max(0, Math.min(1, v));
+function sampleIn(tri){ /* [min, med, max] -> draw biased to median */
+  const u=Math.random();
+  return u<0.5 ? lerp(tri[0],tri[1],u*2) : lerp(tri[1],tri[2],(u-0.5)*2);
+}
+function quantize(f){
+  const midi = 69 + 12*Math.log2(f/440);
+  let best=null, bd=1e9;
+  for (let m=Math.floor(midi)-2; m<=Math.ceil(midi)+2; m++){
+    const pc = ((m%12)+12)%12;
+    if (!PENTA.has(pc)) continue;
+    const dd = Math.abs(m-midi); if (dd<bd){ bd=dd; best=m; }
+  }
+  return 440*Math.pow(2,(best-69)/12);
+}
+function morphFreqAs(f, m){
+  if (m<=0) return f;
+  const q = quantize(f);
+  return Math.exp(lerp(Math.log(f), Math.log(q), m));
+}
+
+/* ---------------- global state ---------------- */
+let actx=null, noiseBuf=null, mixBus=null, analyserNode=null, volGain=null;
+let spaceBus=null, spaceDelayNode=null;
+let roomWet=null, masterComp=null;
+let masterMorph=0, breathLevel=1, tempoBpm=112, spaceLevel=0, masterVol=0.9;
+let fullnessLevel=0, fullnessTouched=false, fullnessAutoSet=false, fullnessCtl=null;
+let selected='cardinal';
+let powerOn=false;
+const gridScale = ()=>112/tempoBpm;
+const noteListeners=[];
+const stats = { notes:0, guardHits:0, body:0 };
+function onNote(fn){ noteListeners.push(fn); }
+function fireNote(v, key, name, when, dur, inten, gainScale){
+  v.stats.notes++; stats.notes++;
+  const ev = { voice:v.id, key, name, when, dur, inten, gainScale:(gainScale==null?1:gainScale) };
+  for (const fn of noteListeners) fn(ev);
+}
+function setFullness(val){
+  fullnessLevel = clamp01(val);
+  if (roomWet && actx) roomWet.gain.setTargetAtTime(fullnessLevel*ROOM_WET_MAX, actx.currentTime, 0.05);
+}
+
+/* ---------------- grammar plan builders (ported from the lab pages) ---------------- */
+function planFromSeq(meas, seq){
+  const evs=[]; let bo=0, go=0;
+  seq.forEach((type,i)=>{
+    evs.push({type, birdOff:bo, gridOff:go,
+      durBird:meas.types[type].durMed, durGrid:meas.types[type].gridDur});
+    if (i<seq.length-1){
+      const tr = meas.grammar.transitions[type+'>'+seq[i+1]] || meas.grammar.fallback || FALLBACK_TR;
+      if (!meas.grammar.transitions[type+'>'+seq[i+1]] && !meas.grammar.fallback) stats.guardHits++;
+      bo += sampleIn([tr.min,tr.med,tr.max]); go += tr.grid;
+    }
+  });
+  const l=evs[evs.length-1];
+  return {evs, durBird:l.birdOff+l.durBird, durGrid:l.gridOff+l.durGrid};
+}
+function makeCardinalPlan(){
+  const M=MEAS_CARDINAL, F=M.grammar.forms, r=Math.random();
+  let seq;
+  if (r < F.A){ const k=M.grammar.aRun[Math.floor(Math.random()*M.grammar.aRun.length)]; seq=['Ua','Ub',...Array(k).fill('D')]; }
+  else if (r < F.A+F.B){ seq=['Ua','Ub','D',...Array(M.grammar.bRun).fill('C')]; }
+  else { seq=Array(M.grammar.cRun).fill('C'); }
+  return planFromSeq(M, seq);
+}
+function makeOwlPlan(){ return planFromSeq(MEAS_OWL, ['P1','P2','P3','P4']); }
+function makeWrenPlan(){
+  const seqs=MEAS_WREN.grammar.sequences;
+  return planFromSeq(MEAS_WREN, seqs[Math.floor(Math.random()*seqs.length)]);
+}
+function makeSparrowPlan(){
+  const forms=MEAS_SPARROW.grammar.forms;
+  return planFromSeq(MEAS_SPARROW, forms[Math.floor(Math.random()*forms.length)]);
+}
+function makeTowheePlan(){
+  const G=MEAS_TOWHEE.grammar, T=MEAS_TOWHEE.types, evs=[];
+  const dI1=T.I1.durMed, dI2=T.I2.durMed;
+  const gap1=sampleIn(G.introGap), gap2=sampleIn(G.introTrillGap);
+  const trillDur=sampleIn([T.TRILL.durMin,T.TRILL.durMed,T.TRILL.durMax]);
+  const rate=sampleIn(G.trillRate);
+  let nNotes=Math.round(trillDur*rate);
+  nNotes=Math.max(G.trillNotes[0], Math.min(G.trillNotes[2], nNotes));
+  const period=trillDur/nNotes;
+  evs.push({type:'I1', birdOff:0, gridOff:0, durBird:dI1, durGrid:T.I1.gridDur});
+  const bI2=dI1+gap1, gI2=T.I1.gridDur+G.gridIntroGap;
+  evs.push({type:'I2', birdOff:bI2, gridOff:gI2, durBird:dI2, durGrid:T.I2.gridDur});
+  const bTr=bI2+dI2+gap2, gTr=gI2+T.I2.gridDur+G.gridIntroTrillGap;
+  for (let i=0;i<nNotes;i++)
+    evs.push({type:'TN', birdOff:bTr+i*period, gridOff:gTr+i*G.gridTrillPeriod, durBird:T.TN.durMed, durGrid:T.TN.gridDur});
+  const l=evs[evs.length-1];
+  return {evs, durBird:l.birdOff+l.durBird, durGrid:l.gridOff+l.durGrid};
+}
+function makeThrushPlan(){
+  const M=MEAS_THRUSH, forms=M.grammar.forms;
+  const seq=forms[Math.floor(Math.random()*forms.length)];
+  const evs=[]; let bo=0, go=0;
+  seq.forEach((el,i)=>{
+    evs.push({type:el.t, freqScale:el.s, birdOff:bo, gridOff:go,
+      durBird:M.types[el.t].durMed, durGrid:M.types[el.t].gridDur});
+    if (i<seq.length-1){
+      const tr = M.grammar.transitions[el.t+'>'+seq[i+1].t] || FALLBACK_TR;
+      if (!M.grammar.transitions[el.t+'>'+seq[i+1].t]) stats.guardHits++;
+      bo += sampleIn([tr.min,tr.med,tr.max]); go += tr.grid;
+    }
+  });
+  const l=evs[evs.length-1];
+  return {evs, durBird:l.birdOff+l.durBird, durGrid:l.gridOff+l.durGrid};
+}
+
+/* ---------------- voice definitions ---------------- */
+const VOICE_DEFS = [
+  { id:'cardinal', name:'NORTHERN CARDINAL', short:'CARDINAL', latin:'Cardinalis cardinalis', kind:'tonal',
+    meas:MEAS_CARDINAL, chain:{bp:[2500,0.55], pk:[3400,1.1,3.5], lp:9500}, breathF:2400, panAmt:0.18,
+    panPos:-0.7, lead:'D', beak:13, peakOf:T=>T.peak,
+    makePlan:makeCardinalPlan, pauseBird:()=>sampleIn(MEAS_CARDINAL.grammar.boutPause), gridPause:4.286 },
+  { id:'owl', name:'GREAT HORNED OWL', short:'OWL', latin:'Bubo virginianus', kind:'tonal',
+    meas:MEAS_OWL, chain:{bp:[520,0.5], pk:[700,1.0,2.5], lp:2600}, breathF:650, panAmt:0.18,
+    panPos:-0.35, lead:'P3', beak:7, peakOf:T=>T.peak,
+    makePlan:makeOwlPlan, pauseBird:()=>sampleIn(MEAS_OWL.grammar.seriesPause), gridPause:4.286 },
+  { id:'thrush', name:'HERMIT THRUSH', short:'THRUSH', latin:'Catharus guttatus', kind:'thrush',
+    meas:MEAS_THRUSH, chain:{bp:[3400,0.55], pk:[4300,1.1,3.0], lp:9500}, breathF:2400, panAmt:0.18,
+    panPos:-0.12, lead:'W', beak:10, peakOf:T=>T.peakRel*THRUSH_GAIN_SCALE,
+    makePlan:makeThrushPlan, pauseBird:()=>sampleIn(MEAS_THRUSH.grammar.songPause), gridPause:MEAS_THRUSH.grammar.gridSongPause },
+  { id:'wren', name:'CAROLINA WREN', short:'WREN', latin:'Thryothorus ludovicianus', kind:'tonal',
+    meas:MEAS_WREN, chain:{bp:[3000,0.55], pk:[3400,1.1,3.0], lp:9500}, breathF:3000, panAmt:0.12,
+    panPos:0.15, lead:'L', beak:11, peakOf:T=>T.peak,
+    makePlan:makeWrenPlan, pauseBird:()=>sampleIn(MEAS_WREN.grammar.boutPause), gridPause:MEAS_WREN.grammar.gridBoutPause },
+  { id:'sparrow', name:'SONG SPARROW', short:'SPARROW', latin:'Melospiza melodia', kind:'tonal',
+    meas:MEAS_SPARROW, chain:{bp:[3200,0.55], pk:[4200,1.1,3.5], lp:9500}, breathF:2400, panAmt:0.18,
+    panPos:0.4, lead:'I', beak:10, peakOf:T=>T.peakRel*0.55,
+    makePlan:makeSparrowPlan, pauseBird:()=>sampleIn(MEAS_SPARROW.grammar.songPause), gridPause:MEAS_SPARROW.grammar.gridSongPause },
+  { id:'towhee', name:'EASTERN TOWHEE', short:'TOWHEE', latin:'Pipilo erythrophthalmus', kind:'tonal',
+    meas:MEAS_TOWHEE, chain:{bp:[3200,0.55], pk:[4100,1.1,3.5], lp:9500}, breathF:3200, panAmt:0.18,
+    panPos:0.7, lead:'I2', beak:11, peakOf:T=>T.peakAmp*0.9,
+    makePlan:makeTowheePlan, pauseBird:()=>sampleIn(MEAS_TOWHEE.grammar.songPause), gridPause:MEAS_TOWHEE.grammar.gridSongPause },
+];
+const VOICES = {};
+function effMorph(v){ return 1-(1-v.morph)*(1-masterMorph); }
+
+/* ---------------- audio core ---------------- */
+function g0(v){ const g=actx.createGain(); g.gain.value=v; return g; }
+function regSrc(v, src){ v.sources.add(src); src.onended=()=>{ v.sources.delete(src); }; }
+
+function buildTonal(v){
+  const c=v.def.chain;
+  v.inode=g0(1);
+  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=c.bp[0]; bp.Q.value=c.bp[1];
+  const pk=actx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=c.pk[0]; pk.Q.value=c.pk[1]; pk.gain.value=c.pk[2];
+  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=c.lp;
+  v.post=g0(1); v.faderGain=g0(v.fader);
+  /* fixed stereo position, matching the bird's place on the wire — wired
+     once here at chain construction (init-time structure, not a note) */
+  v.panNode=actx.createStereoPanner(); v.panNode.pan.value=v.def.panPos;
+  v.inode.connect(bp); bp.connect(pk); pk.connect(lp); lp.connect(v.post);
+  v.post.connect(v.faderGain); v.faderGain.connect(v.panNode);
+  v.panNode.connect(mixBus); v.panNode.connect(spaceBus);
+  const src=actx.createBufferSource(); src.buffer=noiseBuf; src.loop=true;
+  const nf=actx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=v.def.breathF; nf.Q.value=0.7;
+  v.breathEnv=g0(0); v.breathTrim=g0(breathLevel);
+  src.connect(nf); nf.connect(v.breathEnv); v.breathEnv.connect(v.breathTrim); v.breathTrim.connect(v.post);
+  src.start();
+}
+function makeRoomImpulse(){
+  /* a small room, synthesized: 1.6 s of stereo noise with an exponential
+     decay — no external file, generated once at init */
+  const len = Math.floor(actx.sampleRate*1.6);
+  const buf = actx.createBuffer(2, len, actx.sampleRate);
+  for (let ch=0; ch<2; ch++){
+    const d = buf.getChannelData(ch);
+    for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.6);
+  }
+  return buf;
+}
+function ensureAudio(){
+  if (actx) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  noiseBuf = actx.createBuffer(1, 2*actx.sampleRate, actx.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  mixBus = g0(1);
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value=-18; comp.ratio.value=6; comp.knee.value=18;
+  masterComp = comp;
+  analyserNode = actx.createAnalyser(); analyserNode.fftSize=2048; analyserNode.smoothingTimeConstant=0.55;
+  volGain = g0(masterVol);
+  mixBus.connect(comp); comp.connect(analyserNode); analyserNode.connect(volGain); volGain.connect(actx.destination);
+  /* FULLNESS room send, at master level: a tap off the mix bus through the
+     generated-impulse convolver, returning at the compressor input so the
+     limiter still glues it. Wet gain is FULLNESS x ROOM_WET_MAX — exactly 0
+     at FULLNESS 0, so the dry path is the whole sound there. Guarded: hosts
+     without a convolver simply have no room send. */
+  if (typeof actx.createConvolver === 'function'){
+    const conv = actx.createConvolver(); conv.buffer = makeRoomImpulse();
+    roomWet = g0(fullnessLevel*ROOM_WET_MAX);
+    mixBus.connect(conv); conv.connect(roomWet); roomWet.connect(comp);
+  }
+  spaceBus = g0(spaceLevel*0.8);
+  spaceDelayNode = actx.createDelay(1); spaceDelayNode.delayTime.value=0.28;
+  const fbLP=actx.createBiquadFilter(); fbLP.type='lowpass'; fbLP.frequency.value=1800;
+  const fbG=g0(0.35); const wet=g0(0.9);
+  spaceBus.connect(spaceDelayNode); spaceDelayNode.connect(wet); wet.connect(mixBus);
+  spaceDelayNode.connect(fbLP); fbLP.connect(fbG); fbG.connect(spaceDelayNode);
+  for (const def of VOICE_DEFS) VOICES[def.id].build();
+  powerOn = true;
+  document.getElementById('pwrLed').classList.add('on');
+  document.getElementById('btnPower').textContent='OFF';
+  startSpecPainter();
+}
+
+/* ---------------- note rendering (ported voice engines) ---------------- */
+function tonalPlay(v, typeKey, when, opts){
+  opts = opts||{};
+  const T=v.meas.types[typeKey], m=effMorph(v);
+  const durBird = opts.dur || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur*gridScale(), m);
+  const fScale = opts.freqScale || 1;
+  const peak = v.def.peakOf(T) * (opts.gainScale!=null ? opts.gainScale : 1);
+  const curve = T.contour.map(f=>morphFreqAs(f*fScale, m));
+  const f32 = new Float32Array(curve);
+  fireNote(v, typeKey, T.name, when, dur, clamp01(peak*Math.max(...T.amp)), (opts.gainScale!=null ? opts.gainScale : 1));
+  const pan = actx.createStereoPanner(); pan.pan.value = T.voice===0 ? -v.def.panAmt : v.def.panAmt;
+  pan.connect(v.inode);
+  const g=g0(0);
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak)), when, dur);
+  g.connect(pan);
+  const car=actx.createOscillator(); car.type='sine';
+  car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g); regSrc(v, car);
+  const hGain=g0(0);
+  hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm2*(1+fullnessLevel))), when, dur);
+  const harm=actx.createOscillator(); harm.type='sine';
+  harm.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*2)), when, dur);
+  harm.connect(hGain); hGain.connect(pan); regSrc(v, harm);
+  if (T.harm3){
+    const h3Gain=g0(0);
+    h3Gain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm3)), when, dur);
+    const harm3=actx.createOscillator(); harm3.type='sine';
+    harm3.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*3)), when, dur);
+    harm3.connect(h3Gain); h3Gain.connect(pan); regSrc(v, harm3);
+    harm3.start(when); harm3.stop(when+dur+0.05);
+  }
+  if (fullnessLevel > 0.001){
+    /* FULLNESS body: a slightly detuned double of this note's own render,
+       in the note's own chain, scaled by the knob. The breath path is not
+       touched — no new breath nodes, no breath envelope changes. */
+    const bGain=g0(0);
+    bGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*BODY_GAIN*fullnessLevel)), when, dur);
+    const body=actx.createOscillator(); body.type='sine'; body.detune.value=5;
+    body.frequency.setValueCurveAtTime(f32, when, dur);
+    body.connect(bGain); bGain.connect(pan); regSrc(v, body);
+    body.start(when); body.stop(when+dur+0.05);
+    stats.body++;
+  }
+  if (m > 0.02){
+    const sawLP=actx.createBiquadFilter(); sawLP.type='lowpass';
+    sawLP.frequency.value=lerp(4500, 12000, m);
+    const sGain=g0(0);
+    sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*0.30*m)), when, dur);
+    const saw=actx.createOscillator(); saw.type='sawtooth';
+    saw.frequency.setValueCurveAtTime(f32, when, dur);
+    saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(pan); regSrc(v, saw);
+    const mod=actx.createOscillator(); mod.type='sine';
+    mod.frequency.setValueCurveAtTime(f32, when, dur);
+    const mGain=g0(0);
+    mGain.gain.setValueCurveAtTime(new Float32Array(curve.map(f=>f*1.5*m)), when, dur);
+    mod.connect(mGain); mGain.connect(car.frequency); regSrc(v, mod);
+    saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+  }
+  const bCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*BREATH_REL*(1-0.6*m));
+  v.breathEnv.gain.setValueCurveAtTime(new Float32Array(bCurve), when, dur);
+  car.start(when); car.stop(when+dur+0.05);
+  harm.start(when); harm.stop(when+dur+0.05);
+}
+function thrushPlay(v, typeKey, when, opts){
+  opts = opts||{};
+  const T=v.meas.types[typeKey], m=effMorph(v);
+  const durBird = opts.dur || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur*gridScale(), m);
+  const fScale = opts.freqScale || 1;
+  const peak = T.peakRel * THRUSH_GAIN_SCALE * (opts.gainScale!=null ? opts.gainScale : 1);
+  const curve = T.contour.map(f=>morphFreqAs(f*fScale, m));
+  const f32 = new Float32Array(curve);
+  fireNote(v, typeKey, T.name, when, dur, clamp01(peak*Math.max(...T.amp)), (opts.gainScale!=null ? opts.gainScale : 1));
+  const pan = actx.createStereoPanner(); pan.pan.value = T.voice===0 ? -v.def.panAmt : v.def.panAmt;
+  pan.connect(v.inode);
+  /* measured shimmer, as in the lab page: an LFO on a series gain in the note's
+     OWN chain (parameter automation on this note's nodes only); depth fades as
+     the morph goes electronic. It never touches the breath path. */
+  const tremAmt = T.tremDepth * (1-m);
+  let head = pan;
+  if (T.tremRate > 0 && tremAmt > 0.01){
+    const tg = g0(1);
+    tg.connect(pan);
+    const lfo = actx.createOscillator(); lfo.type='sine'; lfo.frequency.value = T.tremRate;
+    const lg = g0(tremAmt);
+    lfo.connect(lg); lg.connect(tg.gain);
+    regSrc(v, lfo);
+    lfo.start(when); lfo.stop(when+dur+0.05);
+    head = tg;
+  }
+  const g = g0(0);
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak)), when, dur);
+  g.connect(head);
+  const car = actx.createOscillator(); car.type='sine';
+  car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g); regSrc(v, car);
+  const hGain = g0(0);
+  hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm2*(1+fullnessLevel))), when, dur);
+  const harm = actx.createOscillator(); harm.type='sine';
+  harm.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*2)), when, dur);
+  harm.connect(hGain); hGain.connect(head); regSrc(v, harm);
+  if (T.harm3 > 0){
+    const h3Gain = g0(0);
+    h3Gain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm3)), when, dur);
+    const harm3 = actx.createOscillator(); harm3.type='sine';
+    harm3.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*3)), when, dur);
+    harm3.connect(h3Gain); h3Gain.connect(head); regSrc(v, harm3);
+    harm3.start(when); harm3.stop(when+dur+0.05);
+  }
+  if (fullnessLevel > 0.001){
+    /* FULLNESS body, thrush edition: the double enters at `head`, AFTER the
+       measured tremolo series gain, so the shimmer shapes the body layer
+       exactly as it shapes the carrier. The thrush's measured harm2 is
+       near zero (a near-pure tone), so the enrichment term above does
+       almost nothing for this voice — the detuned double carries its
+       thickening. Breath path untouched, as everywhere. */
+    const bGain = g0(0);
+    bGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*BODY_GAIN*fullnessLevel)), when, dur);
+    const body = actx.createOscillator(); body.type='sine'; body.detune.value=5;
+    body.frequency.setValueCurveAtTime(f32, when, dur);
+    body.connect(bGain); bGain.connect(head); regSrc(v, body);
+    body.start(when); body.stop(when+dur+0.05);
+    stats.body++;
+  }
+  if (m > 0.02){
+    const sawLP = actx.createBiquadFilter(); sawLP.type='lowpass';
+    sawLP.frequency.value = lerp(4500, 12000, m);
+    const sGain = g0(0);
+    sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*0.30*m)), when, dur);
+    const saw = actx.createOscillator(); saw.type='sawtooth';
+    saw.frequency.setValueCurveAtTime(f32, when, dur);
+    saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(head); regSrc(v, saw);
+    const mod = actx.createOscillator(); mod.type='sine';
+    mod.frequency.setValueCurveAtTime(f32, when, dur);
+    const mGain = g0(0);
+    mGain.gain.setValueCurveAtTime(new Float32Array(curve.map(f=>f*1.5*m)), when, dur);
+    mod.connect(mGain); mGain.connect(car.frequency); regSrc(v, mod);
+    saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+  }
+  const bCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*BREATH_REL*(1-0.6*m));
+  v.breathEnv.gain.setValueCurveAtTime(new Float32Array(bCurve), when, dur);
+  car.start(when); car.stop(when+dur+0.05);
+  harm.start(when); harm.stop(when+dur+0.05);
+}
+
+/* ---------------- per-voice sing scheduler (ported) ---------------- */
+function voiceTick(v){
+  if (!v.singing) return;
+  const now=actx.currentTime, m=effMorph(v), gs=gridScale();
+  if (!v.plan && v.nextAt < now + 1.0){
+    v.plan = (m>=0.5 && v.cached) ? v.cached : v.def.makePlan();
+    if (m>=0.5 && !v.cached) v.cached = v.plan;
+    v.planStart = v.nextAt; v.idx = 0; v.lastAt = 0;
+  }
+  if (!v.plan) return;
+  const ahead = now + 0.18;
+  while (v.idx < v.plan.evs.length){
+    const ev = v.plan.evs[v.idx];
+    let at = v.planStart + lerp(ev.birdOff, ev.gridOff*gs, m);
+    if (at > ahead) break;
+    at = Math.max(at, now+0.01, v.lastAt+0.005);
+    v.play(ev.type, at, ev);
+    v.lastAt = at; v.idx++;
+  }
+  if (v.idx >= v.plan.evs.length){
+    const dur = lerp(v.plan.durBird, v.plan.durGrid*gs, m);
+    const pause = lerp(v.def.pauseBird(), v.def.gridPause*gs, m);
+    v.nextAt = v.planStart + dur + pause;
+    v.plan = null;
+  }
+  if (m < 0.5) v.cached = null;
+}
+function setSing(v, on){
+  if (on && mode==='song') return;   /* song mode: strip SINGs are inert */
+  if (on){
+    ensureAudio(); if (actx.state==='suspended') actx.resume();
+    if (chorusOn) endChorus();
+    v.singing = true; v.cached = null; v.plan = null; v.idx = 0;
+    v.nextAt = actx.currentTime + 0.15;
+    v.timer = setInterval(()=>voiceTick(v), 30);
+    voiceTick(v);
+  } else {
+    v.singing = false;
+    if (v.timer){ clearInterval(v.timer); v.timer = null; }
+  }
+  UI[v.id].sing.classList.toggle('live', v.singing);
+}
+
+/* ---------------- chorus (the conducted dawn chorus) ---------------- */
+let chorusOn=false, chorusTimer=null;
+/* Conductor's order: the owl knocks first in the dark; towhee, wren and sparrow
+   layer in; the cardinal takes the tune; the hermit thrush's flute phrases —
+   the finale, sung at its song's own rung of the measured pitch ladder.
+   One full bout/series/performance per bird per cycle. */
+const CHORUS_ORDER = [['owl',0],['towhee',2.5],['wren',5.0],['sparrow',7.5],['cardinal',10.5],['thrush',13.0]];
+function oneShot(v, startAt){
+  const m=effMorph(v), gs=gridScale(), plan=v.def.makePlan();
+  for (const ev of plan.evs) v.play(ev.type, startAt + lerp(ev.birdOff, ev.gridOff*gs, m), ev);
+  return startAt + lerp(plan.durBird, plan.durGrid*gs, m);
+}
+function runChorusCycle(){
+  if (!chorusOn) return;
+  const t0 = actx.currentTime + 0.25;
+  let end = t0;
+  for (const [id, stag] of CHORUS_ORDER){
+    const e = oneShot(VOICES[id], t0 + stag);
+    if (e > end) end = e;
+  }
+  const cycleLen = end - t0;
+  if (masterMorph >= 0.5){
+    chorusTimer = setTimeout(runChorusCycle, (cycleLen + 4*(60/tempoBpm))*1000);
+  } else {
+    chorusTimer = setTimeout(()=>{ endChorus(); }, Math.max(60, cycleLen*1000));
+  }
+}
+function startChorus(){
+  if (mode==='song') return;   /* song mode: the chorus is inert */
+  ensureAudio(); if (actx.state==='suspended') actx.resume();
+  if (chorusOn){ endChorus(); return; }
+  for (const def of VOICE_DEFS) if (VOICES[def.id].singing) setSing(VOICES[def.id], false);
+  chorusOn = true;
+  document.getElementById('btnChorus').classList.add('live');
+  runChorusCycle();
+}
+function endChorus(){
+  chorusOn = false;
+  if (chorusTimer){ clearTimeout(chorusTimer); chorusTimer = null; }
+  document.getElementById('btnChorus').classList.remove('live');
+}
+
+/* ---------------- stop ---------------- */
+let screenEpoch = 0;
+const animTimers = new Set();
+function stopAll(){
+  stopSong();
+  for (const def of VOICE_DEFS){
+    const v = VOICES[def.id];
+    if (v.singing) setSing(v, false);
+    v.plan = null;
+    for (const s of Array.from(v.sources)){ try{ s.stop(); }catch(e){} }
+    v.sources.clear();
+    if (actx && v.breathEnv){
+      const now = actx.currentTime;
+      v.breathEnv.gain.cancelScheduledValues(now); v.breathEnv.gain.setTargetAtTime(0, now, 0.03);
+    }
+  }
+  if (chorusOn) endChorus();
+  screenEpoch++;
+  for (const t of animTimers) clearTimeout(t);
+  animTimers.clear();
+  activeSet.clear();
+  for (const def of VOICE_DEFS){
+    document.getElementById('bird-'+def.id).classList.remove('on');
+    UI[def.id].led.classList.remove('on');
+  }
+  updateReadout();
+}
+
+/* ---------------- keyboard ---------------- */
+function synthNote(v, f, when, m, gScale){
+  const gs = (gScale==null ? 1 : gScale);
+  const T = v.meas.types[v.def.lead];
+  const dur = Math.max(0.24, Math.min(0.6, T.durMed || 0.4));
+  const o1 = actx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=f;
+  const o2 = actx.createOscillator(); o2.type='square'; o2.frequency.value=f; o2.detune.value=5;
+  const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=lerp(900, 6500, m); lp.Q.value=0.8;
+  const g = g0(0);
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*0.20*m*gs)), when, dur);
+  o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(v.post);
+  regSrc(v, o1); regSrc(v, o2);
+  if (fullnessLevel > 0.001){
+    /* FULLNESS body for the synth layer: a triangle double, detuned the
+       other way from o2, through the same lowpass and its own gain tap */
+    const bGain = g0(0);
+    bGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*0.20*m*gs*BODY_GAIN*fullnessLevel)), when, dur);
+    const body = actx.createOscillator(); body.type='triangle'; body.frequency.value=f; body.detune.value=-6;
+    body.connect(lp); lp.connect(bGain); bGain.connect(v.post);
+    regSrc(v, body);
+    body.start(when); body.stop(when+dur+0.05);
+    stats.body++;
+  }
+  o1.start(when); o1.stop(when+dur+0.05);
+  o2.start(when); o2.stop(when+dur+0.05);
+}
+const keyEls = {};
+function keyNote(midi){
+  if (mode==='song') return;   /* song mode: the keyboard is inert */
+  ensureAudio(); if (actx.state==='suspended') actx.resume();
+  const v = VOICES[selected];
+  const f = 440*Math.pow(2,(midi-69)/12);
+  const m = effMorph(v);
+  const when = actx.currentTime + 0.02;
+  const T = v.meas.types[v.def.lead];
+  v.play(v.def.lead, when, { dur:T.durMed, freqScale:f/T.contour[0], gainScale:(1-m) });
+  if (m > 0.01) synthNote(v, f, when, m);
+  const el = keyEls[midi];
+  if (el){ el.classList.add('on'); setTimeout(()=>el.classList.remove('on'), 200); }
+}
+const KEYMAP = { KeyZ:60, KeyS:61, KeyX:62, KeyD:63, KeyC:64, KeyV:65, KeyG:66, KeyB:67, KeyH:68,
+  KeyN:69, KeyJ:70, KeyM:71, Comma:72, KeyQ:72, Digit2:73, KeyW:74, Digit3:75, KeyE:76, KeyR:77,
+  Digit5:78, KeyT:79, Digit6:80, KeyY:81, Digit7:82, KeyU:83, KeyI:84 };
+const KEYLABEL = { 60:'Z',61:'S',62:'X',63:'D',64:'C',65:'V',66:'G',67:'B',68:'H',69:'N',70:'J',
+  71:'M',72:'Q',73:'2',74:'W',75:'3',76:'E',77:'R',78:'5',79:'T',80:'6',81:'Y',82:'7',83:'U',84:'I' };
+const KEYSUB = { 72:'M' };
+function buildKeyboard(){
+  const kb = document.getElementById('kb');
+  const whites = [];
+  for (let midi=60; midi<=84; midi++){
+    const pc = midi%12;
+    if ([0,2,4,5,7,9,11].includes(pc)) whites.push(midi);
+  }
+  const wW = 100/whites.length;
+  whites.forEach((midi, i)=>{
+    const el = document.createElement('div');
+    el.className='key white'; el.dataset.midi=midi;
+    el.style.left = (i*wW)+'%'; el.style.width = wW+'%'; el.style.top='0'; el.style.bottom='0';
+    const lab = document.createElement('div'); lab.className='kl'; lab.textContent = KEYLABEL[midi]||'';
+    el.appendChild(lab);
+    if (KEYSUB[midi]){ const s=document.createElement('div'); s.className='kn2'; s.textContent=KEYSUB[midi]; el.appendChild(s); }
+    kb.appendChild(el); keyEls[midi]=el;
+  });
+  for (let midi=60; midi<=84; midi++){
+    const pc = midi%12;
+    if (![1,3,6,8,10].includes(pc)) continue;
+    const wi = whites.indexOf(midi-1);
+    const el = document.createElement('div');
+    el.className='key black'; el.dataset.midi=midi;
+    el.style.left = ((wi+1)*wW - wW*0.31)+'%'; el.style.width = (wW*0.62)+'%'; el.style.top='0'; el.style.height='62%';
+    const lab = document.createElement('div'); lab.className='kl'; lab.textContent = KEYLABEL[midi]||'';
+    el.appendChild(lab);
+    kb.appendChild(el); keyEls[midi]=el;
+  }
+  for (const midi in keyEls){
+    const el = keyEls[midi];
+    el.addEventListener('pointerdown', e=>{ e.preventDefault(); keyNote(parseInt(midi,10)); });
+  }
+  window.addEventListener('keydown', e=>{
+    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+    const midi = KEYMAP[e.code];
+    if (midi) keyNote(midi);
+  });
+  window.addEventListener('keyup', e=>{
+    const midi = KEYMAP[e.code];
+    if (midi && keyEls[midi]) keyEls[midi].classList.remove('on');
+  });
+}
+
+/* ---------------- song mode ----------------
+   A library of scored pieces the six voices perform. Scores are data:
+   phrase strings of NAME:beats tokens ("D5:1 G4:0.5 ..."), compiled at
+   load into beat-stamped events. Melody phrases are tagged per form
+   instance with the voice that sings them; each voice renders through
+   its own engine (v.play + the keyboard path's synth layer) at the
+   written pitch times a fixed per-voice register multiplier, so the
+   intervals inside a phrase are exact. The owl sings one bass note per
+   bar. Fills are short ornaments built from a voice's own measured
+   note types, dropped into one-beat slots at section joints.
+   Song onsets are score-exact; note bodies follow the same template
+   duration + morph law as the keyboard (durMed, morph-lerped to the
+   grid) — the rhythm lives in the onsets, exactly as in the chorus. */
+let mode = 'free';
+let songState = null, songTimer = null, songEpoch = 0;
+
+const NOTE_SEMI = { C:0, 'C#':1, D:2, 'D#':3, E:4, F:5, 'F#':6, G:7, 'G#':8, A:9, 'A#':10, B:11 };
+function noteFreq(name){
+  const m = /^([A-G]#?)(\d)$/.exec(name);
+  return 440 * Math.pow(2, ((NOTE_SEMI[m[1]] + (parseInt(m[2],10)+1)*12) - 69) / 12);
+}
+function parsePhrase(str){
+  return str.trim().split(/\s+/).map(tok=>{
+    const i = tok.lastIndexOf(':');
+    return { n: tok.slice(0,i), beats: parseFloat(tok.slice(i+1)) };
+  });
+}
+
+/* FULLNESS harmony data. Chord spellings are engine-level music theory
+   (third/fifth as written note names, close register); each SONG carries
+   only its per-bar chord names, so a future song brings its own chart.
+   The harmony voices rotate through a fixed pool — never the owl, and
+   (enforced at compile time) never the voice singing the melody phrase. */
+const CHORD_TONES = { G:{third:'B3', fifth:'D4'}, C:{third:'E4', fifth:'G4'},
+  D:{third:'F#4', fifth:'A4'}, Em:{third:'G4', fifth:'B4'},
+  Am:{third:'C4', fifth:'E4'}, A:{third:'C#4', fifth:'E4'} };
+const HARMONY_POOL = ['towhee','sparrow','wren'];
+
+const SONGS = [
+  { id:'minuet-g', title:'Minuet in G major', subtitle:'BWV Anh. 114 · Notebook for Anna Magdalena Bach',
+    credit:'Christian Petzold', bpm:120, beatsPerBar:3,
+    /* fixed register multipliers (written pitch -> rendered pitch) */
+    registers:{ cardinal:4, thrush:5, wren:5, sparrow:6, towhee:8 },
+    /* one chord per bar (A: bars 1-16, B: bars 17-32), derived from the
+       source score's bass staff read against its melody — the chord in
+       force on beats 2-3, where the harmony voice sings. Full derivation
+       chart in BUILD-syrinx6.md (FULLNESS section). */
+    chords:{ A:['G','G','C','G','Am','G','G','D','G','G','C','G','Am','G','D','G'],
+             B:['G','D','Em','A','A','D','D','D','G','C','G','D','D','G','G','G'] },
+    sections:{
+      A:{ phrases:[
+          { bars:[1,4],   notes:'D5:1 G4:0.5 A4:0.5 B4:0.5 C5:0.5 D5:1 G4:1 G4:1 E5:1 C5:0.5 D5:0.5 E5:0.5 F#5:0.5 G5:1 G4:1 G4:1' },
+          { bars:[5,8],   notes:'C5:1 D5:0.5 C5:0.5 B4:0.5 A4:0.5 B4:1 C5:0.5 B4:0.5 A4:0.5 G4:0.5 F#4:1 G4:0.5 A4:0.5 B4:0.5 G4:0.5 A4:3' },
+          { bars:[9,12],  notes:'D5:1 G4:0.5 A4:0.5 B4:0.5 C5:0.5 D5:1 G4:1 G4:1 E5:1 C5:0.5 D5:0.5 E5:0.5 F#5:0.5 G5:1 G4:1 G4:1' },
+          { bars:[13,16], notes:'C5:1 D5:0.5 C5:0.5 B4:0.5 A4:0.5 B4:1 C5:0.5 B4:0.5 A4:0.5 G4:0.5 A4:1 B4:0.5 A4:0.5 G4:0.5 F#4:0.5 G4:3' } ],
+        bass:'G3:3 B3:3 C4:3 B3:3 A3:3 G3:3 D4:3 D4:3 B3:3 G3:3 C4:3 B3:3 A3:3 G3:3 C4:3 G3:3' },
+      B:{ phrases:[
+          { bars:[17,20], notes:'B5:1 G5:0.5 A5:0.5 B5:0.5 G5:0.5 A5:1 D5:0.5 E5:0.5 F#5:0.5 D5:0.5 G5:1 E5:0.5 F#5:0.5 G5:0.5 D5:0.5 C#5:1 B4:0.5 C#5:0.5 A4:1' },
+          { bars:[21,24], notes:'A4:0.5 B4:0.5 C#5:0.5 D5:0.5 E5:0.5 F#5:0.5 G5:1 F#5:1 E5:1 F#5:1 A4:1 C#5:1 D5:3' },
+          { bars:[25,28], notes:'D5:1 G4:0.5 F#4:0.5 G4:1 E5:1 G4:0.5 F#4:0.5 G4:1 D5:1 C5:1 B4:1 A4:0.5 G4:0.5 F#4:0.5 G4:0.5 A4:1' },
+          { bars:[29,32], notes:'D4:0.5 E4:0.5 F#4:0.5 G4:0.5 A4:0.5 B4:0.5 C5:1 B4:1 A4:1 B4:0.5 D5:0.5 G4:1 F#4:1 G4:3' } ],
+        bass:'G3:3 F#4:3 E4:3 A3:3 A3:3 B3:3 D4:3 D4:3 B3:3 C4:3 B3:3 D4:3 D4:3 E4:3 G3:3 G3:3' }
+    },
+    fills:{
+      /* sparrow: its measured figure transitions (L>h 0.082 s, h>M 0.055 s,
+         M>L 0.096 s at the song's 0.5 s beat), stated in beats */
+      fillA:{ voice:'sparrow', beats:1, seq:'L:0.164 h:0.110 M:0.192 L:0.164 h:0.110 M:0.192' },
+      /* wren: its fast chip types at 80 ms spacing */
+      fillB:{ voice:'wren', beats:1, seq:'S:0.16 U:0.16 D:0.16 S:0.16 U:0.16' }
+    },
+    form:[
+      { section:'A', part:'A', voices:{ '1-4':'cardinal', '5-8':'sparrow', '9-12':'thrush', '13-16':'towhee' } },
+      { fill:'fillA', part:'A' },
+      { section:'A', part:'A — repeat', voices:{ '1-4':'wren', '5-8':'cardinal', '9-12':'sparrow', '13-16':'towhee' } },
+      { section:'B', part:'B', bars:[17,24], voices:{ '17-20':'cardinal', '21-24':'thrush' } },
+      { fill:'fillB', part:'B' },
+      { section:'B', part:'B', bars:[25,32], voices:{ '25-28':'wren', '29-32':'towhee' } }
+    ] }
+];
+
+function compileSong(song){
+  const events = []; let cursor = 0, seq = 0, harmonyPtr = 0;
+  const bpb = song.beatsPerBar;
+  for (const item of song.form){
+    if (item.fill){
+      const f = song.fills[item.fill];
+      let t = cursor;
+      for (const tok of parsePhrase(f.seq)){
+        events.push({ kind:'fill', voice:f.voice, type:tok.n, beat:t, part:item.part, bar:null, section:null, seq:seq++ });
+        t += tok.beats;
+      }
+      cursor += f.beats;
+      continue;
+    }
+    const sec = song.sections[item.section];
+    const ranges = sec.phrases.map(p=>p.bars);
+    const secFirst = Math.min(...ranges.map(r=>r[0]));
+    const b0 = item.bars ? item.bars[0] : secFirst;
+    const b1 = item.bars ? item.bars[1] : Math.max(...ranges.map(r=>r[1]));
+    for (const ph of sec.phrases){
+      if (ph.bars[1] < b0 || ph.bars[0] > b1) continue;
+      const voice = item.voices[ph.bars[0]+'-'+ph.bars[1]];
+      let t = cursor + (ph.bars[0]-b0)*bpb, bar = ph.bars[0], inBar = 0;
+      for (const tok of parsePhrase(ph.notes)){
+        events.push({ kind:'melody', voice, name:tok.n, freq:noteFreq(tok.n)*song.registers[voice],
+          durBeats:tok.beats, beat:t, part:item.part, bar, section:item.section, seq:seq++ });
+        t += tok.beats; inBar += tok.beats;
+        if (inBar >= bpb - 1e-9){ bar++; inBar = 0; }
+      }
+    }
+    let bt = cursor - (b0-secFirst)*bpb;
+    const bassFreqByBar = {};
+    parsePhrase(sec.bass).forEach((tok, i)=>{
+      const bar = secFirst + i;
+      if (bar >= b0 && bar <= b1){
+        events.push({ kind:'bass', voice:'owl', name:tok.n, freq:noteFreq(tok.n),
+          durBeats:tok.beats, beat:bt, part:item.part, bar, section:item.section, seq:seq++ });
+        bassFreqByBar[bar] = noteFreq(tok.n);
+      }
+      bt += tok.beats;
+    });
+    if (song.chords){
+      /* FULLNESS layers, compiled only for songs that carry a chord chart.
+         Harmony: per phrase, the next pool voice that is not the phrase's
+         melody singer; per bar, the chord's third on beat 2 and its fifth
+         on beat 3, at half the voice's melody register (one octave below
+         its tune register — the register rule is constant per voice, so
+         the pattern's intervals are exact). Bass movement: the owl answers
+         on beat 3 — odd bars the chord fifth placed above the beat-1 note,
+         even bars the root an octave up, capped at 500 Hz (above that the
+         chord fifth answers instead, keeping the hoot in the owl's band).
+         Fill slots are outside the bars, so fills never carry harmony. */
+      const chart = song.chords[item.section];
+      const hVoice = {};
+      for (const ph of sec.phrases){
+        if (ph.bars[1] < b0 || ph.bars[0] > b1) continue;
+        const mv = item.voices[ph.bars[0]+'-'+ph.bars[1]];
+        let hv = HARMONY_POOL[harmonyPtr % HARMONY_POOL.length]; harmonyPtr++;
+        while (hv === mv){ hv = HARMONY_POOL[harmonyPtr % HARMONY_POOL.length]; harmonyPtr++; }
+        hVoice[ph.bars[0]+'-'+ph.bars[1]] = hv;
+      }
+      for (let bar = b0; bar <= b1; bar++){
+        const tones = CHORD_TONES[chart[bar - secFirst]];
+        const barStart = cursor + (bar - b0)*bpb;
+        const ph = sec.phrases.find(p=> bar >= p.bars[0] && bar <= p.bars[1]);
+        const hv = hVoice[ph.bars[0]+'-'+ph.bars[1]];
+        const hReg = song.registers[hv]/2;
+        events.push({ kind:'harmony', voice:hv, name:tones.third, freq:noteFreq(tones.third)*hReg,
+          durBeats:1, beat:barStart+1, part:item.part, bar, section:item.section, seq:seq++, gain:0.35 });
+        events.push({ kind:'harmony', voice:hv, name:tones.fifth, freq:noteFreq(tones.fifth)*hReg,
+          durBeats:1, beat:barStart+2, part:item.part, bar, section:item.section, seq:seq++, gain:0.35 });
+        const bf = bassFreqByBar[bar];
+        let mf = bf*2, mName = 'root8va';
+        if (bar % 2 === 1 || mf > 500){
+          mf = noteFreq(tones.fifth); while (mf <= bf) mf *= 2; mName = tones.fifth;
+        }
+        events.push({ kind:'bass3', voice:'owl', name:mName, freq:mf,
+          durBeats:1, beat:barStart+2, part:item.part, bar, section:item.section, seq:seq++, gain:0.6 });
+      }
+    }
+    cursor += (b1-b0+1)*bpb;
+  }
+  events.sort((a,b)=> a.beat-b.beat || a.seq-b.seq);
+  return { events, totalBeats: cursor };
+}
+const COMPILED = {};
+for (const s of SONGS) COMPILED[s.id] = compileSong(s);
+
+function currentSong(){
+  const pick = document.getElementById('songpick');
+  return SONGS.find(s=>s.id===pick.value) || SONGS[0];
+}
+function updateSongMeta(){
+  const s = currentSong(), c = COMPILED[s.id];
+  document.getElementById('songmeta').innerHTML =
+    '<b>'+s.title+'</b> · '+s.subtitle+' — '+s.credit+' · '+
+    c.totalBeats+' beats · about '+Math.round(c.totalBeats*60/s.bpm)+' s at ♩ = '+s.bpm;
+}
+function setSongProg(ev){
+  document.getElementById('songprog').textContent = ev.kind==='fill'
+    ? ev.part+' · fill — '+VOICES[ev.voice].def.short
+    : ev.part+' · bar '+ev.bar+' — '+VOICES[ev.voice].def.short+' sings';
+}
+/* the keyboard path, note for note: the voice's own engine renders its
+   lead template at the target pitch, bird gain (1-m), plus the saw/square
+   synth layer when the morph is up — so the MORPH knob sweeps a song
+   from birdsong to synth exactly as it sweeps a keyboard phrase. */
+function renderSongNote(ev, when){
+  const v = VOICES[ev.voice], m = effMorph(v);
+  const typeKey = ev.kind==='fill' ? ev.type : v.def.lead;
+  const T = v.meas.types[typeKey];
+  const f = ev.kind==='fill' ? T.contour[0] : ev.freq;
+  /* FULLNESS layer events (harmony, bass movement) exist only above
+     FULLNESS 0 — at 0 they are skipped whole, so the baseline render is
+     event-for-event the pre-FULLNESS song. Above 0 their gains carry
+     their layer factor x the knob value, under the melody's own gain. */
+  const layer = (ev.kind==='harmony' || ev.kind==='bass3');
+  if (layer && fullnessLevel <= 0.001) return;
+  const gf = (ev.gain || 1) * (layer ? fullnessLevel : 1);
+  v.play(typeKey, when, { dur:T.durMed, freqScale:f/T.contour[0], gainScale:(1-m)*gf });
+  if (m > 0.01) synthNote(v, f, when, m, gf);
+}
+function songTick(){
+  const st = songState; if (!st) return;
+  const spb = (60/st.song.bpm) * gridScale();   /* TEMPO knob rescales live, bank convention */
+  const ahead = actx.currentTime + 0.35;
+  while (st.idx < st.evs.length){
+    const ev = st.evs[st.idx];
+    const when = st.startAt + ev.beat*spb;
+    if (when > ahead) break;
+    /* Advance BEFORE rendering, and guard the render: a note render that
+       throws in a real host (an AudioParam curve a browser rejects, a
+       node constructor a webview lacks) must skip that one note — it can
+       never stall the sequence or re-fire the same event on the next
+       tick. The stub graph's fakes never throw, so only this ordering
+       keeps the failure mode impossible rather than merely untested. */
+    st.idx++;
+    let rendered = true;
+    try { renderSongNote(ev, Math.max(when, actx.currentTime + 0.02)); }
+    catch(e){ rendered = false; }
+    if (rendered && (ev.kind === 'melody' || ev.kind === 'fill')){
+      const ep = st.epoch;
+      const t = setTimeout(()=>{ if (songState && songState.epoch===ep) setSongProg(ev); },
+        Math.max(0, (when - actx.currentTime)*1000));
+      animTimers.add(t);
+    }
+  }
+  if (st.idx >= st.evs.length && actx.currentTime > st.startAt + st.totalBeats*spb + 1.0){
+    const title = st.song.title;
+    stopSong();
+    document.getElementById('songprog').textContent = title+' — finished';
+  }
+}
+function startSong(){
+  if (mode!=='song' || songState) return;   /* free play: the song transport is inert */
+  ensureAudio(); if (actx.state==='suspended') actx.resume();
+  for (const def of VOICE_DEFS) if (VOICES[def.id].singing) setSing(VOICES[def.id], false);
+  if (chorusOn) endChorus();
+  const song = currentSong(), comp = COMPILED[song.id];
+  songState = { song, evs:comp.events, idx:0, totalBeats:comp.totalBeats,
+    startAt: actx.currentTime + 0.12, epoch: ++songEpoch };
+  songTimer = setInterval(songTick, 30);
+  const play = document.getElementById('songplay');
+  play.textContent = '♪ PLAYING'; play.classList.add('live');
+  document.getElementById('songprog').textContent = song.title+' — '+song.credit;
+  songTick();
+}
+function stopSong(){
+  if (songTimer){ clearInterval(songTimer); songTimer = null; }
+  songState = null; songEpoch++;
+  const play = document.getElementById('songplay');
+  if (play){ play.textContent = '▶ PLAY SONG'; play.classList.remove('live'); }
+  const prog = document.getElementById('songprog');
+  if (prog) prog.textContent = '—';
+}
+function setMode(m){
+  if (m === mode) return;
+  stopAll();
+  mode = m;
+  document.getElementById('chassis').classList.toggle('songmode', m==='song');
+  document.getElementById('mode-free').classList.toggle('on', m==='free');
+  document.getElementById('mode-song').classList.toggle('on', m==='song');
+  if (m === 'song'){
+    updateSongMeta();
+    /* the demo default: the FIRST time SONG mode is entered, an untouched
+       FULLNESS knob goes to 0.5 so the demo song arrives full. After that
+       the knob is the user's, and free play never moves it. */
+    if (!fullnessTouched && !fullnessAutoSet){
+      fullnessAutoSet = true;
+      if (fullnessCtl) fullnessCtl.set(0.5);
+    }
+  }
+}
+function wireSong(){
+  const pick = document.getElementById('songpick');
+  for (const s of SONGS){
+    const o = document.createElement('option');
+    o.value = s.id; o.textContent = s.title+' — '+s.credit;
+    pick.appendChild(o);
+  }
+  pick.value = SONGS[0].id;
+  pick.addEventListener('change', ()=>{ stopSong(); updateSongMeta(); });
+  document.getElementById('mode-free').addEventListener('click', ()=>setMode('free'));
+  document.getElementById('mode-song').addEventListener('click', ()=>setMode('song'));
+  document.getElementById('songplay').addEventListener('click', startSong);
+  document.getElementById('songstop').addEventListener('click', ()=>{ ensureAudio(); stopAll(); });
+  updateSongMeta();
+}
+
+/* ---------------- knobs & faders ---------------- */
+function attachKnob(el, opts){
+  const dial = el.children[0];
+  const K = { min:opts.min, max:opts.max, val:opts.value,
+    get(){ return K.val; },
+    set(v, fire){
+      K.val = Math.max(K.min, Math.min(K.max, v));
+      const t = (K.val-K.min)/(K.max-K.min);
+      dial.style.transform = 'rotate('+(-135+270*t).toFixed(1)+'deg)';
+      if (fire!==false && opts.oninput) opts.oninput(K.val);
+    } };
+  let dragY=null, dragVal=0;
+  el.addEventListener('pointerdown', e=>{
+    dragY = e.clientY; dragVal = K.val;
+    if (el.setPointerCapture) { try{ el.setPointerCapture(e.pointerId); }catch(err){} }
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove', e=>{
+    if (dragY===null) return;
+    K.set(dragVal + (dragY - e.clientY)/150*(K.max-K.min));
+  });
+  const endDrag = ()=>{ dragY=null; };
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
+  el.addEventListener('wheel', e=>{
+    e.preventDefault();
+    K.set(K.val + (e.deltaY<0 ? 1 : -1)*(K.max-K.min)*0.045);
+  }, { passive:false });
+  K.set(opts.value, false);
+  return K;
+}
+function attachFader(el, cap, opts){
+  const F = { val:opts.value,
+    get(){ return F.val; },
+    set(v, fire){
+      F.val = clamp01(v);
+      cap.style.top = ((1-F.val)*84).toFixed(1)+'%';
+      if (fire!==false && opts.oninput) opts.oninput(F.val);
+    } };
+  let dragging=false;
+  const fromEvent = e=>{
+    const r = el.getBoundingClientRect();
+    F.set(1 - (e.clientY - r.top)/Math.max(1, r.height));
+  };
+  el.addEventListener('pointerdown', e=>{ dragging=true; fromEvent(e); e.preventDefault(); });
+  el.addEventListener('pointermove', e=>{ if (dragging) fromEvent(e); });
+  el.addEventListener('pointerup', ()=>{ dragging=false; });
+  el.addEventListener('pointercancel', ()=>{ dragging=false; });
+  F.set(opts.value, false);
+  return F;
+}
+
+/* ---------------- channel strips (built, refs kept) ---------------- */
+const UI = {};
+function buildStrips(){
+  const wrap = document.getElementById('strips');
+  for (const def of VOICE_DEFS){
+    const v = VOICES[def.id];
+    const s = document.createElement('section');
+    s.className='strip'; s.id='strip-'+def.id;
+    if (def.id===selected) s.classList.add('sel');
+    const led = document.createElement('div'); led.className='led'; led.id='led-'+def.id;
+    const np = document.createElement('div'); np.className='nameplate';
+    const nb = document.createElement('b'); nb.textContent = def.short;
+    const ns = document.createElement('span'); ns.textContent = def.latin;
+    np.appendChild(nb); np.appendChild(ns);
+    const sing = document.createElement('button'); sing.className='sing'; sing.id='sing-'+def.id; sing.textContent='SING';
+    const fader = document.createElement('div'); fader.className='fader'; fader.id='fader-'+def.id;
+    for (let i=0;i<5;i++){ const t=document.createElement('div'); t.className='ftick'; t.style.top=(8+i*21)+'%'; fader.appendChild(t); }
+    const cap = document.createElement('div'); cap.className='fcap'; fader.appendChild(cap);
+    const fval = document.createElement('div'); fval.className='fval'; fval.id='fval-'+def.id;
+    const kname = document.createElement('div'); kname.className='kname'; kname.textContent='Morph';
+    const knob = document.createElement('div'); knob.className='knob small'; knob.id='knob-'+def.id;
+    const dial = document.createElement('div'); dial.className='knob-dial';
+    const ptr = document.createElement('div'); ptr.className='knob-ptr';
+    dial.appendChild(ptr); knob.appendChild(dial);
+    const kval = document.createElement('div'); kval.className='kval'; kval.id='kval-'+def.id;
+    const ptype = document.createElement('div'); ptype.className='ptype'; ptype.id='ptype-'+def.id; ptype.textContent='—';
+    s.appendChild(led); s.appendChild(np); s.appendChild(sing); s.appendChild(fader); s.appendChild(fval);
+    s.appendChild(kname); s.appendChild(knob); s.appendChild(kval); s.appendChild(ptype);
+    wrap.appendChild(s);
+    UI[def.id] = { strip:s, led, sing, fader, fval, knob, kval, ptype };
+    sing.addEventListener('click', ()=>{ select(def.id); setSing(v, !v.singing); });
+    s.addEventListener('click', ()=>{ select(def.id); });
+    v.faderCtl = attachFader(fader, cap, { value:v.fader, oninput(val){
+      v.fader = val;
+      fval.textContent = Math.round(val*100);
+      if (v.faderGain && actx) v.faderGain.gain.setTargetAtTime(val, actx.currentTime, 0.03);
+    } });
+    fval.textContent = Math.round(v.fader*100);
+    v.morphCtl = attachKnob(knob, { min:0, max:1, value:0, oninput(val){
+      v.morph = val;
+      kval.textContent = Math.round(val*100)+'%';
+      if (val < 0.5) v.cached = null;
+      updateReadout();
+    } });
+    kval.textContent = '0%';
+  }
+}
+function select(id){
+  selected = id;
+  for (const def of VOICE_DEFS) UI[def.id].strip.classList.toggle('sel', def.id===id);
+  document.getElementById('kbSel').textContent = '▸ ' + VOICES[id].def.name;
+  updateReadout();
+}
+
+/* ---------------- screen animation (schedule-time callbacks) ---------------- */
+const activeSet = new Set();
+function updateReadout(){
+  const roA = document.getElementById('roActive');
+  const names = Array.from(activeSet).map(id=>VOICES[id].def.short);
+  roA.textContent = names.length ? names.join(' + ') : '—';
+  document.getElementById('roMorph').textContent = Math.round(effMorph(VOICES[selected])*100)+'%';
+  document.getElementById('roBpm').textContent = Math.round(tempoBpm)+' BPM';
+  document.getElementById('masterLed').classList.toggle('on', activeSet.size>0);
+  document.getElementById('valSig').textContent = activeSet.size ? 'live' : 'idle';
+}
+function wireScreen(){
+  onNote(ev=>{
+    const v = VOICES[ev.voice];
+    const delay = actx ? Math.max(0, (ev.when - actx.currentTime)*1000) : 0;
+    const ep = screenEpoch;
+    const t1 = setTimeout(()=>{
+      if (ep !== screenEpoch) return;
+      const bird = document.getElementById('bird-'+ev.voice);
+      bird.style.setProperty('--beak', (v.def.beak*(0.4+0.6*ev.inten)).toFixed(1)+'deg');
+      bird.classList.add('on');
+      UI[ev.voice].led.classList.add('on');
+      UI[ev.voice].ptype.textContent = ev.name;
+      document.getElementById('roPhrase').textContent = v.def.short+' — '+ev.name;
+      activeSet.add(ev.voice);
+      updateReadout();
+      const t2 = setTimeout(()=>{
+        bird.classList.remove('on');
+        UI[ev.voice].led.classList.remove('on');
+        activeSet.delete(ev.voice);
+        updateReadout();
+      }, Math.max(70, ev.dur*1000));
+      animTimers.add(t2);
+    }, delay);
+    animTimers.add(t1);
+  });
+}
+
+/* ---------------- spectrogram strip ---------------- */
+function specColor(val){
+  if (val<10) return '#071410';
+  const t = val/255;
+  if (t<0.45){ const u=t/0.45; return 'rgb('+Math.round(10+20*u)+','+Math.round(26+110*u)+','+Math.round(18+72*u)+')'; }
+  if (t<0.75){ const u=(t-0.45)/0.30; return 'rgb('+Math.round(30+225*u)+','+Math.round(136+60*u)+','+Math.round(90-64*u)+')'; }
+  const u=(t-0.75)/0.25; return 'rgb(255,'+Math.round(196+59*u)+','+Math.round(26+200*u)+')';
+}
+function startSpecPainter(){
+  const cv = document.getElementById('spec');
+  const cx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  cx.fillStyle = '#071410'; cx.fillRect(0,0,W,H);
+  const freq = new Uint8Array(analyserNode.frequencyBinCount);
+  const rows = 26;
+  function frame(){
+    requestAnimationFrame(frame);
+    if (!analyserNode) return;
+    analyserNode.getByteFrequencyData(freq);
+    cx.drawImage(cv, -2, 0);
+    for (let r=0;r<rows;r++){
+      const tt = r/(rows-1);
+      const bin = Math.min(freq.length-1, Math.floor(Math.pow(tt,1.7)*freq.length*0.72)+2);
+      cx.fillStyle = specColor(freq[bin]);
+      cx.fillRect(W-2, H-(r+1)*(H/rows), 2, H/rows+1);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- master controls ---------------- */
+function wireMaster(){
+  document.getElementById('btnChorus').addEventListener('click', startChorus);
+  document.getElementById('btnStop').addEventListener('click', ()=>{ ensureAudio(); stopAll(); });
+  document.getElementById('btnPower').addEventListener('click', ()=>{
+    if (!actx){ ensureAudio(); if (actx.state==='suspended') actx.resume(); return; }
+    if (actx.state==='running'){
+      actx.suspend(); powerOn=false;
+      document.getElementById('pwrLed').classList.remove('on');
+      document.getElementById('btnPower').textContent='ON';
+    } else {
+      actx.resume(); powerOn=true;
+      document.getElementById('pwrLed').classList.add('on');
+      document.getElementById('btnPower').textContent='OFF';
+    }
+  });
+  attachKnob(document.getElementById('knobMMorph'), { min:0, max:1, value:0, oninput(val){
+    masterMorph = val;
+    document.getElementById('valMMorph').textContent = Math.round(val*100)+'%';
+    updateReadout();
+  } });
+  fullnessCtl = attachKnob(document.getElementById('knobFull'), { min:0, max:1, value:0, oninput(val){
+    setFullness(val);
+    document.getElementById('valFull').textContent = Math.round(val*100)+'%';
+  } });
+  const kfEl = document.getElementById('knobFull');
+  kfEl.addEventListener('pointerdown', ()=>{ fullnessTouched = true; });
+  kfEl.addEventListener('wheel', ()=>{ fullnessTouched = true; });
+  attachKnob(document.getElementById('knobBreath'), { min:0, max:1, value:1, oninput(val){
+    breathLevel = val;
+    document.getElementById('valBreath').textContent = Math.round(val*100)+'%';
+    if (actx){
+      for (const def of VOICE_DEFS){
+        const v = VOICES[def.id];
+        if (v.breathTrim) v.breathTrim.gain.setTargetAtTime(val, actx.currentTime, 0.03);
+      }
+    }
+  } });
+  attachKnob(document.getElementById('knobTempo'), { min:60, max:160, value:112, oninput(val){
+    tempoBpm = val;
+    document.getElementById('valTempo').textContent = Math.round(val);
+    updateReadout();
+  } });
+  attachKnob(document.getElementById('knobSpace'), { min:0, max:1, value:0, oninput(val){
+    spaceLevel = val;
+    document.getElementById('valSpace').textContent = Math.round(val*100)+'%';
+    if (spaceBus && actx) spaceBus.gain.setTargetAtTime(val*0.8, actx.currentTime, 0.03);
+  } });
+  attachKnob(document.getElementById('knobVol'), { min:0, max:1, value:0.9, oninput(val){
+    masterVol = val;
+    document.getElementById('valVol').textContent = Math.round(val*100)+'%';
+    if (volGain && actx) volGain.gain.setTargetAtTime(val, actx.currentTime, 0.03);
+  } });
+}
+
+/* ---------------- voice objects ---------------- */
+for (const def of VOICE_DEFS){
+  const v = { id:def.id, def, kind:def.kind, meas:def.meas, morph:0,
+    fader: def.id==='owl' ? 0.9 : (def.id==='thrush' ? 0.85 : 0.8),
+    singing:false, timer:null, plan:null, idx:0, planStart:0, nextAt:0, cached:null, lastAt:0,
+    sources:new Set(), stats:{notes:0} };
+  v.build = ()=>buildTonal(v);
+  v.play = def.kind==='thrush' ? (k,w,o)=>thrushPlay(v,k,w,o) : (k,w,o)=>tonalPlay(v,k,w,o);
+  VOICES[def.id] = v;
+}
+
+/* ---------------- boot + public API ---------------- */
+buildStrips();
+buildKeyboard();
+wireMaster();
+wireScreen();
+wireSong();
+updateReadout();
+window.SYRINX = {
+  init: ensureAudio,
+  voices: VOICES,
+  onNote,
+  stats,
+  sing(id){ const v=VOICES[id]; setSing(v, !v.singing); },
+  setSing(id, on){ setSing(VOICES[id], !!on); },
+  chorus: startChorus,
+  stopAll,
+  setMode,
+  startSong,
+  stopSong,
+  songs: SONGS.map(s=>({ id:s.id, title:s.title, subtitle:s.subtitle, credit:s.credit, bpm:s.bpm })),
+  songEvents(id){ const c = COMPILED[id || SONGS[0].id]; return c ? c.events : []; },
+  keyNote,
+  select,
+  setVoiceMorph(id, val){ VOICES[id].morphCtl.set(val); },
+  setMasterMorph(val){ masterMorph = val; updateReadout(); },
+  setFullness(val){ fullnessTouched = true; if (fullnessCtl) fullnessCtl.set(val); else setFullness(val); },
+  roomWet(){ return roomWet ? roomWet.gain.value : null; },
+  setBreath(val){ breathLevel = val; if (actx){ for (const def of VOICE_DEFS){ const v=VOICES[def.id]; if (v.breathTrim) v.breathTrim.gain.value=val; } } },
+  setTempo(bpm){ tempoBpm = bpm; updateReadout(); },
+  setSpace(val){ spaceLevel = val; if (spaceBus) spaceBus.gain.value = val*0.8; },
+  setVolume(val){ masterVol = val; if (volGain) volGain.gain.value = val; },
+  setFader(id, val){ VOICES[id].faderCtl.set(val); },
+  effMorph(id){ return effMorph(VOICES[id]); },
+  state(){ return { selected, chorusOn, masterMorph, tempoBpm, breathLevel, mode, fullness: fullnessLevel,
+    songPlaying: !!songState, songId: songState ? songState.song.id : null,
+    singing: VOICE_DEFS.map(d=>VOICES[d.id].singing) }; }
+};
+</script>
+</body>
+</html>

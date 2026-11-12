@@ -1,0 +1,502 @@
+import json, numpy as np
+
+J = json.load(open('/home/hatch/workspace/bird-synth/analysis/hermit-thrush-measurements.json'))
+TYPES = J['phrase_types']
+
+def med(d): return d['median']
+def base_of(ty): return float(np.median(TYPES[ty]['contour_template_hz']))
+
+types_out = {}
+for ty, v in TYPES.items():
+    tr = v['tremolo']
+    types_out[ty] = dict(
+        name=v['name'], n=v['n_instances'],
+        durMed=med(v['dur_s']), durMin=v['dur_s']['min'], durMax=v['dur_s']['max'],
+        fStart=med(v['f_start_hz']), fEnd=med(v['f_end_hz']),
+        gridDur=v['grid_dur_s'],
+        harm2=round(med(v['harm2_ratio']), 4), harm3=round(med(v['harm3_ratio']), 4),
+        peakRel=med(v['peak_amp_rel']), voice=v['voice'],
+        tremRate=(round(med(tr['rate_hz']), 2) if tr else 0),
+        tremDepth=(round(0.45 * med(tr['depth_index']), 3) if tr else 0),
+        contour=v['contour_template_hz'], amp=v['amp_template'])
+
+trans_out = {}
+for k, v in J['transitions'].items():
+    trans_out[k] = dict(min=v['period_s']['min'], med=v['period_s']['median'],
+                        max=v['period_s']['max'], grid=v['grid_period_s'])
+
+forms_out = []
+for s in J['songs']:
+    forms_out.append([dict(t=n['type'], s=round(n['f_med_hz'] / base_of(n['type']), 4))
+                      for n in s['form']])
+
+meas = dict(types=types_out,
+            grammar=dict(transitions=trans_out,
+                         songPause=[J['song_pause_s']['min'], J['song_pause_s']['median'], J['song_pause_s']['max']],
+                         gridSongPause=J['grid_song_pause_s'],
+                         forms=forms_out),
+            ladder=[l['base_freq_hz'] for l in J['pitch_ladder']['levels']],
+            tremoloOverall=dict(rateMed=J['tremolo']['rate_hz']['median'],
+                                depthMed=J['tremolo']['depth_index']['median']))
+
+html = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermit Thrush — a syrinx study</title>
+<style>
+  :root{
+    --paper:#f7f2e9; --paper2:#efe7d8; --ink:#2b2320; --ink-soft:#6d5f55;
+    --accent:#b35c1e; --accent-deep:#7e3f12; --line:#d9cdb8; --card:#fffdf8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    color:var(--ink);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:34px 22px 56px}
+  .kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent-deep);margin:0 0 8px}
+  h1{font-size:44px;font-weight:normal;margin:0 0 4px;line-height:1.05}
+  h1 .latin{font-style:italic;font-size:22px;color:var(--ink-soft)}
+  .sub{font-size:15.5px;line-height:1.55;color:var(--ink-soft);max-width:640px;margin:10px 0 0}
+  .sub b{color:var(--ink);font-weight:normal;border-bottom:1px solid var(--accent)}
+  hr.rule{border:none;border-top:1px solid var(--line);margin:26px 0}
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 14px;box-shadow:0 1px 0 #fff inset,0 10px 30px rgba(80,60,30,.07);
+  }
+  .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  button{
+    font-family:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--paper);padding:11px 26px;font-size:16px;letter-spacing:.04em;
+    transition:all .15s ease;
+  }
+  button:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent-deep)}
+  button:disabled{opacity:.45;cursor:default}
+  #singBtn{min-width:150px}
+  .morph{flex:1;min-width:260px}
+  .morph .labels{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .morph .labels .bird{color:var(--accent-deep)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:28px;cursor:pointer}
+  .morphVal{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:-2px;font-style:italic}
+  canvas#trace{width:100%;height:150px;display:block;margin-top:14px;background:#fdfaf3;border:1px solid var(--line);border-radius:6px}
+  .traceNote{font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  h2{font-size:13px;letter-spacing:.26em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);margin:30px 0 12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .card h3{margin:0;font-size:17px;font-weight:normal}
+  .card h3 .tag{font-size:10.5px;letter-spacing:.18em;color:var(--accent-deep);text-transform:uppercase;margin-left:8px}
+  .card .nums{font-size:13px;color:var(--ink-soft);line-height:1.5;font-variant-numeric:tabular-nums}
+  .card svg{display:block;width:100%;height:38px}
+  .card button{align-self:flex-start;padding:6px 18px;font-size:13.5px;background:transparent;color:var(--ink);border-color:var(--ink)}
+  .card button:hover{background:var(--ink);color:var(--paper)}
+  .foot{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-top:8px}
+  .foot b{color:var(--ink);font-weight:normal}
+  a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Bird-synth engine · Hermit Thrush</p>
+  <h1>Hermit Thrush <span class="latin">Catharus guttatus</span></h1>
+  <p class="sub">A syrinx, modeled — not sampled. Every pitch curve, note length and pause in this
+  instrument was <b>measured</b> from one reference recording: 30 notes pitch-tracked frame by frame,
+  29 of them templated into seven phrase types across <b>8 songs</b>. This bird's problem is
+  <b>pitch level</b>: each song is sung at its own height — the measured ladder runs
+  2766 · 3234 · 3539 · 3727 · 3750 · 3797 · 3867 · 4172 Hz — and every sustained note carries a
+  measured shimmer, an amplitude pulse at a median <b>11 Hz</b>. Nothing here was invented to
+  “sound bird-like”; where the model simplifies, the notes at the foot of the page say so.</p>
+
+  <hr class="rule">
+
+  <div class="stage">
+    <div class="row">
+      <button id="singBtn">▶&ensp;Sing</button>
+      <div class="morph">
+        <div class="labels"><span class="bird">Bird</span><span id="morphPct">0%</span><span>Electronic</span></div>
+        <input type="range" id="morph" min="0" max="1000" value="0">
+        <div class="morphVal" id="morphVal">measured contours · free timing · breathy sine</div>
+      </div>
+    </div>
+    <canvas id="trace" width="1600" height="300"></canvas>
+    <div class="traceNote">The model’s own pitch trace (what the oscillators were told to sing), log scale. Gridlines at measured landmarks: 2766 · 3539 · 4172 · 5906 Hz — the ladder’s lowest song base, the demo song’s base, the ladder’s highest base, and the chip median.</div>
+  </div>
+
+  <h2>Measured phrase types — hear each one alone</h2>
+  <div class="cards" id="cards"></div>
+
+  <hr class="rule">
+  <p class="foot"><b>Source.</b> Modeled from xeno-canto recording <b>XC1048898</b> — Hermit Thrush,
+  recorded by <b>AUDEVARD Aurélien</b>, Homer, Kenai Peninsula, Alaska, 2022-06-20 ·
+  Creative Commons Attribution-NonCommercial-ShareAlike 4.0 · XC grade A (verified on the
+  recording page). Background species on the recording page: none.
+  By measured phrase-to-floor contrast (gap floor −46.3 dB RMS vs phrases −21.5 dB, p10/p90 of
+  0.25 s windows) the phrases stand well clear of a near-silent floor.
+  No audio from the recording is played or reused; the synth re-creates measured pitch
+  contours with oscillators. No recording audio is used anywhere in this page.</p>
+  <p class="foot"><b>Method, briefly.</b> Notes were segmented on the recording’s band envelope in two
+  passes (a body pass and a prominence-gated sensitive pass) and pitch-tracked by STFT peak-picking
+  (1.3–9.5 kHz). Each phrase type below is the median of its measured instances — contour, duration
+  range, harmonic levels and shimmer rate included. The whole file was scanned for
+  aircraft/vehicle rumble: no low-frequency (60–500 Hz) swell exists in this file
+  (see BUILD-hermit-thrush.md). A faint breath of filtered air rides under each note on a single
+  fixed path whose gain is shaped per note and returns to zero between notes. The
+  Bird⇄Electronic slider continuously interpolates pitch (toward an A-major-pentatonic grid),
+  timing (toward 112 BPM), and timbre (sine → saw + FM) — it is one instrument being pulled
+  across a line, not two presets. Full method and caveats: BUILD-hermit-thrush.md.</p>
+</div>
+
+<script>
+'use strict';
+/* ============ MEASURED DATA — every measured value from hermit-thrush-measurements.json ============
+   XC1048898 only. Contours/amps: 16-point median templates. Each song form carries, per
+   note, a freqScale = that note's measured median frequency / its type template's base
+   (median contour) — replaying a form transposes every note to its own measured pitch
+   level, which is how the pitch ladder gets into the performance. gridDur / grid periods /
+   gridSongPause are design choices for the electronic end of the morph (documented in
+   BUILD-hermit-thrush.md), not measurements. tremDepth = 0.45 x the measured envelope
+   depth index (design scaling, documented). peakRel is the measured median peak amplitude
+   of the type, relative to the file peak; GAIN_SCALE is the design constant that turns it
+   into a note gain. */
+const MEAS = /*__MEAS__*/;
+const GRID = { bpm:112, beat:60/112 };           /* design choice for the electronic end */
+const PENTA = new Set([9,11,1,4,6]);             /* A-major pentatonic pitch classes (design choice) */
+const GAIN_SCALE = 0.6;                          /* design choice: measured peakRel -> note peak gain */
+
+let actx=null, master, voiceBus, breathGain, analyser, noiseSrc;
+let morph=0;
+const BREATH_REL = 0.05;   /* breath peak cap: 5% of a note's peak gain (the v1 failure fix — see initAudio) */
+const traceEvents=[];   /* {t0, dur, curve:[Hz]} — the model's own scheduled pitch */
+
+function initAudio(){
+  if (actx) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  master = actx.createGain(); master.gain.value = 0.9;
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value=-18; comp.ratio.value=6; comp.knee.value=0;
+  comp.attack.value=0.003; comp.release.value=0.25;
+  analyser = actx.createAnalyser(); analyser.fftSize = 2048;
+  master.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+
+  /* resonant chain — a fixed vocal-tract coloration (design choice, sits inside the measured band) */
+  voiceBus = actx.createGain();
+  const bp = actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3400; bp.Q.value=0.55;
+  const pk = actx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=4300; pk.Q.value=1.1; pk.gain.value=3.0;
+  const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=9500;
+  voiceBus.connect(bp); bp.connect(pk); pk.connect(lp); lp.connect(master);
+
+  /* breath: ONE fixed path — looped noise -> bandpass -> breathGain -> master.
+     Connected exactly once, here, and never reconnected. Per-note shaping happens
+     ONLY on breathGain.gain (see playNote). The cardinal v1 page connected a fresh
+     parallel tap per note; the taps stacked and the noise multiplied until it
+     buried the bird — that defect is designed out here. */
+  const len = 2*actx.sampleRate, buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0); for (let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  noiseSrc = actx.createBufferSource(); noiseSrc.buffer=buf; noiseSrc.loop=true;
+  const nf = actx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=2400; nf.Q.value=0.7;
+  breathGain = actx.createGain(); breathGain.gain.value=0;
+  noiseSrc.connect(nf); nf.connect(breathGain); breathGain.connect(master);
+  noiseSrc.start();
+}
+
+function quantize(f){
+  const midi = 69 + 12*Math.log2(f/440);
+  let best=null, bd=1e9;
+  for (let m=Math.floor(midi)-2; m<=Math.ceil(midi)+2; m++){
+    const pc = ((m%12)+12)%12;
+    if (!PENTA.has(pc)) continue;
+    const dd = Math.abs(m-midi); if (dd<bd){ bd=dd; best=m; }
+  }
+  return 440*Math.pow(2,(best-69)/12);
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+function morphFreq(f){
+  if (morph<=0) return f;
+  const q = quantize(f);
+  return Math.exp(lerp(Math.log(f), Math.log(q), morph));
+}
+function sampleIn(tri){ /* [min, med, max] -> draw biased to median */
+  const u=Math.random();
+  return u<0.5 ? lerp(tri[0],tri[1],u*2) : lerp(tri[1],tri[2],(u-0.5)*2);
+}
+
+/* ---- one syrinx note: fundamental + measured 2nd/3rd harmonics + measured shimmer
+        (a gain LFO on the note's own gain) + saw/FM edge by morph + breath ---- */
+function playNote(typeKey, when, opts={}){
+  const T = MEAS.types[typeKey];
+  const durBird = opts.dur || sampleIn([T.durMin, T.durMed, T.durMax]);
+  const dur = lerp(durBird, T.gridDur, morph);
+  const fScale = opts.freqScale || 1;
+  const peak = T.peakRel * GAIN_SCALE * (opts.gainScale || 1);
+  const curve = T.contour.map(f => morphFreq(f*fScale));
+  const f32 = new Float32Array(curve);
+  traceEvents.push({t0:when, dur, curve:[...curve]});
+
+  const pan = actx.createStereoPanner(); pan.pan.value = T.voice===0 ? -0.18 : 0.18;
+  pan.connect(voiceBus);
+
+  /* shimmer: the measured amplitude pulse, as an LFO on a series gain in the note's
+     OWN chain (parameter automation on this note's nodes only — nothing here touches
+     the breath path). Depth fades as the morph goes electronic. */
+  const tremAmt = T.tremDepth * (1-morph);
+  let head = pan;
+  if (T.tremRate > 0 && tremAmt > 0.01){
+    const tg = actx.createGain(); tg.gain.value = 1;
+    tg.connect(pan);
+    const lfo = actx.createOscillator(); lfo.type='sine'; lfo.frequency.value = T.tremRate;
+    const lg = actx.createGain(); lg.gain.value = tremAmt;
+    lfo.connect(lg); lg.connect(tg.gain);
+    lfo.start(when); lfo.stop(when+dur+0.05);
+    head = tg;
+  }
+
+  const g = actx.createGain();
+  g.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak)), when, dur);
+  g.connect(head);
+
+  const car = actx.createOscillator(); car.type='sine';
+  car.frequency.setValueCurveAtTime(f32, when, dur); car.connect(g);
+
+  const hGain = actx.createGain();
+  hGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm2)), when, dur);
+  const harm = actx.createOscillator(); harm.type='sine';
+  harm.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*2)), when, dur);
+  harm.connect(hGain); hGain.connect(head);
+
+  if (T.harm3 > 0){
+    const h3Gain = actx.createGain();
+    h3Gain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*T.harm3)), when, dur);
+    const harm3 = actx.createOscillator(); harm3.type='sine';
+    harm3.frequency.setValueCurveAtTime(new Float32Array(curve.map(f=>f*3)), when, dur);
+    harm3.connect(h3Gain); h3Gain.connect(head);
+    harm3.start(when); harm3.stop(when+dur+0.05);
+  }
+
+  if (morph > 0.02){
+    const sawLP = actx.createBiquadFilter(); sawLP.type='lowpass';
+    sawLP.frequency.value = lerp(4500, 12000, morph);
+    const sGain = actx.createGain();
+    sGain.gain.setValueCurveAtTime(new Float32Array(T.amp.map(a=>a*peak*0.30*morph)), when, dur);
+    const saw = actx.createOscillator(); saw.type='sawtooth';
+    saw.frequency.setValueCurveAtTime(f32, when, dur);
+    saw.connect(sawLP); sawLP.connect(sGain); sGain.connect(head);
+    const mod = actx.createOscillator(); mod.type='sine';
+    mod.frequency.setValueCurveAtTime(f32, when, dur);
+    const mGain = actx.createGain();
+    mGain.gain.setValueCurveAtTime(new Float32Array(curve.map(f=>f*1.5*morph)), when, dur);
+    mod.connect(mGain); mGain.connect(car.frequency);
+    saw.start(when); saw.stop(when+dur+0.05); mod.start(when); mod.stop(when+dur+0.05);
+  }
+  /* breath under the note: an envelope on the SINGLE breathGain (fixed path, see
+     initAudio). Endpoints are forced to 0, so the breath is fully closed between
+     notes and through every pause; the peak is capped at BREATH_REL x the note's
+     own peak gain. No nodes are created, connected or disconnected here. */
+  const bCurve = T.amp.map((a,i)=> (i===0 || i===T.amp.length-1) ? 0 : a*peak*BREATH_REL*(1-0.6*morph));
+  breathGain.gain.setValueCurveAtTime(new Float32Array(bCurve), when, dur);
+
+  car.start(when); car.stop(when+dur+0.05);
+  harm.start(when); harm.stop(when+dur+0.05);
+}
+
+/* ================= Sing: the measured song grammar + pitch ladder ================= */
+let singing=false, schedTimer=null, nextBoutAt=0, planIdx=0, boutPlan=null, cachedPlan=null;
+
+/* Song grammar, measured on XC1048898 (8 songs). The generator picks one of the
+   eight observed song forms verbatim (element order is never invented), then draws
+   each element's duration from its measured [min, med, max] and each onset-to-onset
+   period from the measured transition [min, med, max] for that ordered pair. Each
+   element keeps its own measured freqScale, so the song is replayed at its own
+   measured pitch level — the ladder (bases 2766-4172 Hz) is in the forms, not in
+   any rule. Grid side uses the design grid periods in MEAS.grammar. */
+function makeSongPlan(){
+  const forms = MEAS.grammar.forms;
+  const seq = forms[Math.floor(Math.random()*forms.length)];
+  const evs = [];
+  let bo=0, go=0;
+  seq.forEach((el, i)=>{
+    const type = el.t;
+    evs.push({type, freqScale:el.s, birdOff:bo, gridOff:go,
+      durBird:MEAS.types[type].durMed, durGrid:MEAS.types[type].gridDur});
+    if (i < seq.length-1){
+      const tr = MEAS.grammar.transitions[type+'>'+seq[i+1].t];
+      bo += sampleIn([tr.min, tr.med, tr.max]); go += tr.grid;
+    }
+  });
+  const lastEv = evs[evs.length-1];
+  return {evs, seq:seq.map(e=>e.t), durBird:lastEv.birdOff+lastEv.durBird, durGrid:lastEv.gridOff+lastEv.durGrid};
+}
+
+let planStart = 0, lastAt = 0;
+function schedule(){
+  if (!singing) return;
+  const now = actx.currentTime;
+  if (!boutPlan && nextBoutAt < now + 1.0){
+    boutPlan = (morph>=0.5 && cachedPlan) ? cachedPlan : makeSongPlan();
+    if (morph>=0.5 && !cachedPlan) cachedPlan = boutPlan;
+    planStart = nextBoutAt; planIdx = 0; lastAt = 0;
+  }
+  if (!boutPlan) return;
+  const ahead = now + 0.18;
+  while (planIdx < boutPlan.evs.length){
+    const ev = boutPlan.evs[planIdx];
+    let at = planStart + lerp(ev.birdOff, ev.gridOff, morph);
+    if (at > ahead) break;
+    at = Math.max(at, now+0.01, lastAt+0.005);
+    playNote(ev.type, at, ev);
+    lastAt = at; planIdx++;
+  }
+  if (planIdx >= boutPlan.evs.length){
+    const boutDur = lerp(boutPlan.durBird, boutPlan.durGrid, morph);
+    const pause = lerp(sampleIn(MEAS.grammar.songPause), MEAS.grammar.gridSongPause, morph);
+    nextBoutAt = planStart + boutDur + pause;
+    boutPlan = null;
+  }
+}
+
+const singBtn = document.getElementById('singBtn');
+singBtn.addEventListener('click', ()=>{
+  initAudio(); if (actx.state==='suspended') actx.resume();
+  singing = !singing;
+  singBtn.innerHTML = singing ? '■&ensp;Stop' : '▶&ensp;Sing';
+  if (singing){
+    cachedPlan=null; boutPlan=null; planIdx=0;
+    nextBoutAt = actx.currentTime + 0.15;
+    schedTimer = setInterval(schedule, 30);
+    schedule();
+  } else {
+    clearInterval(schedTimer);
+  }
+});
+
+/* ================= phrase cards ================= */
+const cardsEl = document.getElementById('cards');
+const order = ['SONG','W','S','U','D','C','u','d'];
+const desc = {
+  SONG:'One full song in a measured form — the longest clean form in the file: a chip, three sustained flutes and a falling close, all at that song’s own pitch level (base 3539 Hz).',
+  W:'The lead whistle — a flat, sustained opening note (4359 Hz median), fused to the phrase that follows it. Three of the eight songs open with one; the others begin mid-phrase.',
+  S:'The sustained flute — the phrase’s body. A near-pure swept tone around 3.5 kHz carrying the measured ~10 Hz shimmer.',
+  U:'The rising flute — a sustained note climbing about 15% across its length, some opening as low as 1.9 kHz.',
+  D:'The falling flute — the long descending close, dropping 15–39%; the longest note in the file (0.98 s) is one of these.',
+  C:'A chip — a 40 ms spark at ~6 kHz. Two of them, very faint, are all that measurement could recover of the first song’s quiet intro.',
+  u:'A short up-chirp, ~0.1 s, rising steeply — phrase punctuation in the first songs.',
+  d:'A short down-chirp, ~0.09 s — the first song ends with a pair of these under its sustained note.'
+};
+function sparkSVG(contour){
+  const w=220,h=38, lo=1300, hi=8500;
+  const pts = contour.map((f,i)=>{
+    const x=(i/(contour.length-1))*w;
+    const y=h-4-((Math.log(f)-Math.log(lo))/(Math.log(hi)-Math.log(lo)))*(h-8);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#b35c1e" stroke-width="1.6"/></svg>`;
+}
+for (const key of order){
+  const card = document.createElement('div'); card.className='card';
+  if (key==='SONG'){
+    card.innerHTML = `<h3>The song<span class="tag">form 6 of 8</span></h3>
+      ${sparkSVG(MEAS.types.W.contour.concat(MEAS.types.S.contour, MEAS.types.D.contour))}
+      <div class="nums">C S S S D · one of the 8 measured song forms at its own pitch level · song bases ${MEAS.ladder.map(f=>Math.round(f)).join(' · ')} Hz · pauses 1.39–5.98 s<br>played with measured timing and each note’s measured pitch level</div>
+      <div class="nums" style="font-style:italic">${desc.SONG}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play song';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      const seq = MEAS.grammar.forms[5];
+      let off = 0; const t0 = actx.currentTime+0.06;
+      seq.forEach((el, i)=>{
+        playNote(el.t, t0+off, {freqScale:el.s});
+        if (i < seq.length-1){
+          const tr = MEAS.grammar.transitions[el.t+'>'+seq[i+1].t];
+          off += lerp(tr.med, tr.grid, morph);
+        }
+      });
+    });
+    card.appendChild(b);
+  } else {
+    const T = MEAS.types[key];
+    const trem = T.tremRate > 0 ? `<br>shimmer ${T.tremRate} Hz (measured AM rate)` : '';
+    card.innerHTML = `<h3>${T.name}<span class="tag">${key}</span></h3>
+      ${sparkSVG(T.contour)}
+      <div class="nums">${Math.round(T.fStart)} → ${Math.round(T.fEnd)} Hz · ${T.durMed.toFixed(3)} s
+      (${T.durMin.toFixed(2)}–${T.durMax.toFixed(2)}) · n = ${T.n} measured${trem}</div>
+      <div class="nums" style="font-style:italic">${desc[key]}</div>`;
+    const b=document.createElement('button'); b.textContent='▶ Play';
+    b.addEventListener('click', ()=>{
+      initAudio(); if (actx.state==='suspended') actx.resume();
+      playNote(key, actx.currentTime+0.06, {});
+    });
+    card.appendChild(b);
+  }
+  cardsEl.appendChild(card);
+}
+
+/* ================= morph slider ================= */
+const morphEl = document.getElementById('morph');
+const morphVal = document.getElementById('morphVal');
+const morphPct = document.getElementById('morphPct');
+function morphText(m){
+  if (m<0.02) return 'measured contours · free timing · breathy sine';
+  if (m<0.35) return 'pitch leaning toward the scale · timing steadying · a little edge';
+  if (m<0.65) return 'half bird, half machine · songs start to loop';
+  if (m<0.98) return 'scale-locked pitch · near-grid timing · saw + FM sheen';
+  return 'A-major pentatonic · 112 BPM grid · full electronic timbre, still the thrush’s contours';
+}
+morphEl.addEventListener('input', ()=>{
+  morph = morphEl.value/1000;
+  morphPct.textContent = Math.round(morph*100)+'%';
+  morphVal.textContent = morphText(morph);
+  if (morph<0.5) cachedPlan=null;
+});
+
+/* ================= pitch trace ================= */
+const cv = document.getElementById('trace'), cx = cv.getContext('2d');
+const LANDMARKS = [2766, 3539, 4172, 5906];   /* measured: ladder min base · demo-song base · max base · chip f_med median */
+function drawTrace(){
+  requestAnimationFrame(drawTrace);
+  const W=cv.width, H=cv.height;
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle='#fdfaf3'; cx.fillRect(0,0,W,H);
+  const fLo=1200, fHi=9000, win=9;
+  const yOf = f => H-14 - ((Math.log(f)-Math.log(fLo))/(Math.log(fHi)-Math.log(fLo)))*(H-28);
+  cx.strokeStyle='#e4d9c4'; cx.fillStyle='#9a8a76'; cx.font='20px Georgia'; cx.lineWidth=1;
+  for (const f of LANDMARKS){
+    cx.beginPath(); cx.moveTo(0,yOf(f)); cx.lineTo(W,yOf(f)); cx.stroke();
+    cx.fillText(f+' Hz', 10, yOf(f)-6);
+  }
+  if (!actx) return;
+  const now = actx.currentTime;
+  cx.strokeStyle='#b35c1e'; cx.lineWidth=2.4; cx.beginPath();
+  let pen=false;
+  for (const ev of traceEvents){
+    for (let i=0;i<ev.curve.length;i++){
+      const tt = ev.t0 + ev.dur*i/(ev.curve.length-1);
+      const age = now-tt;
+      if (age<0 || age>win){ if (age>win) pen=false; continue; }
+      const x = W - (age/win)*W, y = yOf(ev.curve[i]);
+      if (!pen){ cx.moveTo(x,y); pen=true; } else cx.lineTo(x,y);
+    }
+    pen=false;
+  }
+  cx.stroke();
+  while (traceEvents.length && now-traceEvents[0].t0 > win+2) traceEvents.shift();
+}
+drawTrace();
+</script>
+</body>
+</html>
+"""
+
+meas_json = json.dumps(meas, indent=1)
+html = html.replace('/*__MEAS__*/', meas_json)
+open('/home/hatch/workspace/bird-synth/hermit-thrush.html', 'w').write(html)
+print('page written:', len(html), 'bytes')
+print('ladder:', meas['ladder'])
+print('forms:', [[(e['t'], e['s']) for e in f] for f in forms_out])
